@@ -491,7 +491,7 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
               <div className="flex gap-4 justify-center">
                 <button
                   onClick={() => setGender("male")}
-                  disabled={limitCheck && !limitCheck.allowed}
+                  disabled={limitCheck ? !limitCheck.allowed : false}
                   className={`px-6 py-3 rounded-xl font-semibold transition-all ${
                     gender === "male"
                       ? "scale-105 shadow-lg"
@@ -507,7 +507,7 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
                 </button>
                 <button
                   onClick={() => setGender("female")}
-                  disabled={limitCheck && !limitCheck.allowed}
+                  disabled={limitCheck ? !limitCheck.allowed : false}
                   className={`px-6 py-3 rounded-xl font-semibold transition-all ${
                     gender === "female"
                       ? "scale-105 shadow-lg"
@@ -527,7 +527,7 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
             <div className="text-center">
               <button 
                 onClick={handleGenerate} 
-                disabled={!gender || (limitCheck && !limitCheck.allowed)}
+                disabled={!gender || (limitCheck ? !limitCheck.allowed : false)}
                 className={`btn-primary text-lg px-8 py-4 ${!gender || (limitCheck && !limitCheck.allowed) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
