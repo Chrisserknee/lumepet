@@ -211,7 +211,7 @@ h1, h2, h3, h4 {
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-3px); }
 }
 
 @keyframes spin {
@@ -246,10 +246,10 @@ h1, h2, h3, h4 {
 
 @keyframes pulse-glow {
   0%, 100% {
-    filter: drop-shadow(0 0 8px rgba(255, 220, 100, 0.5)) drop-shadow(0 0 15px rgba(255, 215, 80, 0.4)) drop-shadow(0 0 22px rgba(255, 200, 60, 0.3)) drop-shadow(0 0 30px rgba(255, 190, 50, 0.2));
+    filter: drop-shadow(0 0 8px rgba(255, 220, 100, 0.25)) drop-shadow(0 0 15px rgba(255, 215, 80, 0.2)) drop-shadow(0 0 22px rgba(255, 200, 60, 0.15)) drop-shadow(0 0 30px rgba(255, 190, 50, 0.1));
   }
   50% {
-    filter: drop-shadow(0 0 12px rgba(255, 225, 110, 0.6)) drop-shadow(0 0 20px rgba(255, 220, 90, 0.5)) drop-shadow(0 0 28px rgba(255, 210, 70, 0.4)) drop-shadow(0 0 35px rgba(255, 200, 60, 0.25));
+    filter: drop-shadow(0 0 12px rgba(255, 225, 110, 0.3)) drop-shadow(0 0 20px rgba(255, 220, 90, 0.25)) drop-shadow(0 0 28px rgba(255, 210, 70, 0.2)) drop-shadow(0 0 35px rgba(255, 200, 60, 0.15));
   }
 }
 
@@ -261,14 +261,14 @@ h1, h2, h3, h4 {
 
 .sparkle {
   position: absolute;
-  width: 2px;
-  height: 2px;
+  width: 1px;
+  height: 1px;
   background: rgba(255, 220, 100, 0.9);
   border-radius: 50%;
   box-shadow: 
-    0 0 4px rgba(255, 220, 100, 1),
-    0 0 8px rgba(255, 215, 80, 0.8),
-    0 0 12px rgba(255, 200, 60, 0.6);
+    0 0 2px rgba(255, 220, 100, 1),
+    0 0 4px rgba(255, 215, 80, 0.8),
+    0 0 6px rgba(255, 200, 60, 0.6);
   pointer-events: none;
 }
 
