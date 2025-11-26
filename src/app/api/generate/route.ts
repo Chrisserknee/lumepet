@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize API clients
-    // Use Grok (xAI) if available, otherwise fall back to OpenAI
+    // Use Grok (xAI) for everything if available, otherwise fall back to OpenAI
     const grok = useGrok ? new OpenAI({
       apiKey: process.env.XAI_API_KEY,
       baseURL: "https://api.x.ai/v1",
@@ -75,12 +75,12 @@ export async function POST(request: NextRequest) {
       apiKey: process.env.OPENAI_API_KEY,
     }) : null;
     
-    // Choose which client to use for each task
+    // Use Grok for BOTH vision and image generation if available
     const visionClient = grok || openai!;
-    const imageClient = openai || grok!; // OpenAI for image gen if available, else Grok
+    const imageClient = grok || openai!;
     
     console.log(`Using ${grok ? 'Grok' : 'OpenAI'} for vision analysis`);
-    console.log(`Using ${openai ? 'OpenAI' : 'Grok'} for image generation`);
+    console.log(`Using ${grok ? 'Grok' : 'OpenAI'} for image generation`);
 
     // Parse form data
     const formData = await request.formData();
@@ -383,15 +383,15 @@ AESTHETIC DETAILS:
 !!!!!`;
 
     // Use appropriate image generation model
-    // If we have OpenAI, use gpt-image-1; if only Grok, use grok-2-image
-    const imageModel = openai ? "gpt-image-1" : "grok-2-image";
+    // Prioritize Grok if available
+    const imageModel = grok ? "grok-2-image" : "gpt-image-1";
     
     const imageResponse = await imageClient.images.generate({
       model: imageModel,
       prompt: generationPrompt,
       n: 1,
       size: "1024x1024",
-      ...(openai ? { quality: "high" } : {}), // quality param only for OpenAI
+      ...(!grok ? { quality: "high" } : {}), // quality param only for OpenAI
     });
 
     const imageData = imageResponse.data?.[0];
