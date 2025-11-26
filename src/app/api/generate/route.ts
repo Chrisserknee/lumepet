@@ -330,9 +330,17 @@ AESTHETIC DETAILS:
     // Generate image with DALL-E 3
     console.log("Generating image with DALL-E 3...");
     
+    // DALL-E 3 has a 4000 character limit - truncate if needed
+    const maxPromptLength = 3900; // Leave some buffer
+    const finalPrompt = generationPrompt.length > maxPromptLength 
+      ? generationPrompt.substring(0, maxPromptLength) + "..."
+      : generationPrompt;
+    
+    console.log("Prompt length:", finalPrompt.length);
+    
     const imageResponse = await openai.images.generate({
       model: "dall-e-3",
-      prompt: generationPrompt,
+      prompt: finalPrompt,
       n: 1,
       size: "1024x1024",
       quality: "hd",
