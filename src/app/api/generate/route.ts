@@ -290,8 +290,19 @@ IMPORTANT: This description must capture what makes THIS SPECIFIC PET unique and
     const background = backgrounds[Math.floor(Math.random() * backgrounds.length)];
     const lighting = lightingDirections[Math.floor(Math.random() * lightingDirections.length)];
 
-    // Step 2: Generate Renaissance royal portrait with DALL-E
-    const generationPrompt = `!!!!! CRITICAL - THIS IS A ${species} !!!!!
+    // Step 2: Generate Renaissance royal portrait
+    // Grok has a 1024 char limit, so we need a condensed prompt for it
+    
+    // Extract key details from pet description (first 300 chars for Grok)
+    const shortPetDesc = petDescription.substring(0, 300);
+    
+    // Condensed prompt for Grok (under 1024 chars)
+    const grokPrompt = `Royal Renaissance oil painting portrait of a ${species}. ${shortPetDesc}
+
+Style: Classical Dutch Golden Age, Rembrandt lighting, dark moody background. Pet wearing ${robe.split(' with ')[0]}, on ${cushion.split(' with ')[0]}. Luminous oil painting with glowing highlights, bright whites, silky fur texture. Noble, dignified pose. Museum quality masterpiece.`;
+
+    // Full detailed prompt for OpenAI
+    const openaiPrompt = `!!!!! CRITICAL - THIS IS A ${species} !!!!!
 Generate a portrait of a ${species}. ${notSpecies}
 
 ===== SPECIES VERIFICATION =====
@@ -381,6 +392,9 @@ AESTHETIC DETAILS:
 - The ${species} MUST look like the SPECIFIC pet described - same face, same markings, same proportions
 - The owner must be able to recognize THIS IS THEIR PET, not just a generic ${species}
 !!!!!`;
+
+    // Use appropriate prompt based on which API we're using
+    const generationPrompt = grok ? grokPrompt : openaiPrompt;
 
     // Use appropriate image generation model
     // Prioritize Grok if available
