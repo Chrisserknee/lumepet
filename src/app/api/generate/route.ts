@@ -118,30 +118,33 @@ export async function POST(request: NextRequest) {
           content: [
             {
               type: "text",
-              text: `You are an expert pet portrait artist. Analyze this pet photo with EXTREME PRECISION to capture every unique physical detail. The goal is to create a portrait that the owner will instantly recognize as THEIR specific pet.
+              text: `You are an expert pet portrait artist. Analyze this pet photo with EXTREME PRECISION.
 
-Describe in meticulous detail:
+CRITICAL: Start your response with the EXACT species in caps, like this:
+"[DOG] This is a..." or "[CAT] This is a..." or "[RABBIT] This is a..."
 
-1. SPECIES & BREED: Exact animal type and specific breed (or mix). Be precise - don't just say "dog", say "Golden Retriever" or "cream-colored Chihuahua with deer-head features"
+Then describe in meticulous detail:
 
-2. FACE STRUCTURE: Head shape (round, wedge, square), muzzle length and shape, nose color and size, jaw structure
+1. SPECIES & BREED: Exact animal type (DOG, CAT, RABBIT, etc.) and specific breed. Be very precise.
 
-3. EARS: Shape (pointed, floppy, folded, erect), size relative to head, positioning (high-set, wide-set), any asymmetry, inner ear color
+2. COAT COLOR - BE EXTREMELY PRECISE:
+   - If the fur is BLACK, say "JET BLACK" or "SOLID BLACK" - do NOT say dark gray or charcoal
+   - If the fur is WHITE, say "PURE WHITE" 
+   - For other colors, be specific: "golden blonde", "chocolate brown", "ginger orange"
+   - Note any patterns: tabby stripes, spots, patches, etc.
 
-4. EYES: Exact color (honey brown, amber, golden yellow, ice blue, etc.), shape (round, almond, oval), size, expression, any unique markings around eyes
+3. FACE: Head shape, muzzle length, nose color, ear shape (pointed/floppy/folded)
 
-5. COAT/FUR: 
-   - Primary color with exact shade (not just "orange" but "deep ginger orange with golden undertones")
-   - Secondary colors and their locations
-   - Pattern type (solid, tabby stripes, spots, patches, ticking)
-   - Fur length and texture (short sleek, long flowing, wiry, fluffy)
-   - Any distinctive markings (white chest patch, facial mask, sock feet, etc.)
+4. EYES: Exact color (green, amber, blue, brown), shape, expression
 
-6. DISTINCTIVE FEATURES: Any unique identifying marks - scars, spots, color variations, whisker patterns, facial expressions, head tilt
+5. DISTINCTIVE MARKINGS: Any unique features - white patches, facial markings, etc.
 
-7. PERSONALITY VISIBLE: The expression and demeanor - regal, playful, curious, sassy, gentle, alert
+6. FUR TEXTURE: Short, medium, long, fluffy, sleek, wiry
 
-Format as a single detailed paragraph focusing on physical accuracy. This description must be specific enough that ONLY this exact pet could match it.`,
+FORMAT YOUR RESPONSE EXACTLY LIKE THIS:
+"[SPECIES] This is a [breed] with [exact coat color] fur..."
+
+The description must be accurate enough that the owner instantly recognizes their specific pet.`,
             },
             {
               type: "image_url",
@@ -153,33 +156,55 @@ Format as a single detailed paragraph focusing on physical accuracy. This descri
           ],
         },
       ],
-      max_tokens: 800,
+      max_tokens: 600,
     });
 
     const petDescription = visionResponse.choices[0]?.message?.content || "a beloved pet";
 
+    // Extract species from the description (format: [DOG], [CAT], etc.)
+    const speciesMatch = petDescription.match(/\[(DOG|CAT|RABBIT|BIRD|HAMSTER|GUINEA PIG|FERRET|HORSE|PET)\]/i);
+    const species = speciesMatch ? speciesMatch[1].toUpperCase() : "PET";
+
     // Step 2: Generate Renaissance royal portrait with DALL-E
-    const generationPrompt = `Create a masterpiece oil painting in the style of Rembrandt and classical Dutch Golden Age portraiture.
+    const generationPrompt = `IMPORTANT: Generate a portrait of a ${species}, NOT any other animal.
 
-THE SUBJECT: ${petDescription}
+Create a classical oil painting portrait in the Dutch Golden Age style.
 
-CRITICAL - PHYSICAL ACCURACY: The pet's physical features described above MUST be rendered with photographic accuracy - exact fur colors, patterns, markings, eye color, ear shape, and facial structure. The viewer must instantly recognize their specific pet.
+===== THE SUBJECT (MUST MATCH EXACTLY) =====
+${petDescription}
 
-ROYAL PORTRAIT STYLE:
-- The pet is posed regally on an ornate velvet cushion (deep emerald green or teal) with elaborate gold embroidered scrollwork and corner tassels
-- Wearing luxurious royal attire: a sumptuous velvet robe or cape (rich burgundy, deep crimson, or royal purple) with ermine fur trim (white with black spots)
-- Adorned with elegant jewelry: a gold chain necklace with an ornate medallion or pendant with precious gems (emerald, ruby, or pearl)
-- Optional: lace ruff collar, gold brocade details on clothing
+===== CRITICAL REQUIREMENTS =====
+1. SPECIES: This MUST be a ${species}. Do NOT generate any other type of animal.
+2. COLOR ACCURACY: 
+   - If described as BLACK fur, paint it TRUE BLACK/JET BLACK (not gray, not dark brown)
+   - If described as WHITE fur, paint it PURE WHITE
+   - Match the EXACT colors described above
+3. The pet must be recognizable as the specific animal described
 
-ARTISTIC TECHNIQUE:
-- Rembrandt-style dramatic chiaroscuro lighting from upper left
-- Rich, deep shadows with warm golden highlights on fur and fabric
-- Dark umber/brown atmospheric background with subtle velvet drapery
-- Visible oil painting brushstrokes and canvas texture
-- Classical composition with the pet as dignified nobility
-- Museum-quality fine art execution
+===== COMPOSITION (MEDIUM-WIDE SHOT) =====
+- Frame the subject from mid-distance showing FULL BODY on the cushion
+- Include substantial background space around the subject
+- The pet should occupy about 60% of the frame height, not filling the entire canvas
+- Show the complete velvet cushion with decorative tassels at corners
+- Include visible floor space in front of the cushion
 
-The pet should have a noble, dignified expression befitting royalty. Portrait orientation, three-quarter view pose with front paws resting elegantly on the cushion.`;
+===== ROYAL ATTIRE =====
+- Luxurious velvet robe or cape (burgundy, crimson, or purple) with ermine fur trim
+- Ornate gold medallion necklace with gemstone
+- Pet posed regally on an emerald/teal velvet cushion with gold embroidered scrollwork
+
+===== LIGHTING (BRIGHT BUT CLASSICAL) =====
+- Well-lit scene with warm golden lighting from upper left
+- Soft shadows, NOT overly dark or muddy
+- Rich but BRIGHT color palette - the pet's features should be clearly visible
+- Warm amber/golden tones throughout
+- Background: warm brown with subtle velvet drapery, but NOT too dark
+
+===== ARTISTIC STYLE =====
+- Classical oil painting with visible brushstrokes
+- Museum-quality Dutch Golden Age portraiture
+- Noble, dignified expression
+- Three-quarter view pose with front paws on cushion`;
 
     const imageResponse = await openai.images.generate({
       model: "gpt-image-1",
