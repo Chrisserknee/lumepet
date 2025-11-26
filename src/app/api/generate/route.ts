@@ -142,17 +142,15 @@ Format your response as a single detailed paragraph that can be used as an art p
     const petDescription = visionResponse.choices[0]?.message?.content || "a beloved pet";
 
     // Step 2: Generate Renaissance portrait with DALL-E 3
-    const generationPrompt = `A highly detailed Renaissance oil painting portrait of ${petDescription}. 
+    const generationPrompt = `A highly detailed, classical oil painting style portrait of ${petDescription}, posed as nobility, seated on an ornate velvet cushion in a dimly lit, old-world aristocratic interior. The setting features rich baroque architecture with soft shadowed columns, stone steps, and dramatic chiaroscuro lighting reminiscent of 17th–18th century European royal portraiture.
 
-Style requirements:
-- Classical Renaissance painting technique with visible brushstrokes like Rembrandt or Titian
-- Rich, warm color palette with deep burgundies, golds, and earth tones
-- Dramatic chiaroscuro lighting with a dark, atmospheric background
-- The pet is depicted nobly, wearing an ornate Renaissance-era collar or ruff
-- Baroque-style draped velvet curtains in the background
-- Museum-quality fine art appearance with authentic canvas texture
-- The pet looks dignified and regal, as if posing for a royal portrait
-- Ornate gilded frame visible at edges`;
+The pet wears luxurious historical attire inspired by royal fashion — such as fur-trimmed robes, embroidered velvet cloaks, ruffled collars, pearl necklaces, or ornate medallions — with variations in fabric color, texture, and era styling (Renaissance, Baroque, or Victorian influences). Expression should feel dignified, composed, and slightly solemn, with carefully rendered fur, lifelike glassy eyes, and painterly brushstroke textures.
+
+The cushion beneath the pet varies in design — deep emerald or sapphire velvet with gold tassels, brocade patterns with embroidered filigree, or plush silk pillows with royal insignias.
+
+Color palette: rich and moody with warm golds, deep burgundies, forest greens, and shadowed browns. The atmosphere feels timeless, noble, and slightly dramatic — like a museum-quality heirloom portrait of a royal pet.
+
+Ultra-detailed, realistic oil painting, soft diffused light, painterly texture, cinematic shadows, classical composition, museum-grade fine art.`;
 
     const imageResponse = await openai.images.generate({
       model: "dall-e-3",
