@@ -142,15 +142,7 @@ Format your response as a single detailed paragraph that can be used as an art p
     const petDescription = visionResponse.choices[0]?.message?.content || "a beloved pet";
 
     // Step 2: Generate Renaissance portrait with DALL-E 3
-    const generationPrompt = `A highly detailed, classical oil painting style portrait of ${petDescription}, posed as nobility, seated on an ornate velvet cushion in a dimly lit, old-world aristocratic interior. The setting features rich baroque architecture with soft shadowed columns, stone steps, and dramatic chiaroscuro lighting reminiscent of 17th–18th century European royal portraiture.
-
-The pet wears luxurious historical attire inspired by royal fashion — such as fur-trimmed robes, embroidered velvet cloaks, ruffled collars, pearl necklaces, or ornate medallions — with variations in fabric color, texture, and era styling (Renaissance, Baroque, or Victorian influences). Expression should feel dignified, composed, and slightly solemn, with carefully rendered fur, lifelike glassy eyes, and painterly brushstroke textures.
-
-The cushion beneath the pet varies in design — deep emerald or sapphire velvet with gold tassels, brocade patterns with embroidered filigree, or plush silk pillows with royal insignias.
-
-Color palette: rich and moody with warm golds, deep burgundies, forest greens, and shadowed browns. The atmosphere feels timeless, noble, and slightly dramatic — like a museum-quality heirloom portrait of a royal pet.
-
-Ultra-detailed, realistic oil painting, soft diffused light, painterly texture, cinematic shadows, classical composition, museum-grade fine art.`;
+    const generationPrompt = `A museum-quality fine art oil painting of a majestic ${petDescription}, portrayed with rich texture and expressive brushstrokes. The subject is set within a natural environment that softly complements its habitat. Dramatic yet elegant lighting, painterly depth, and subtle color variations create a timeless, classical atmosphere. The image features unique pose, expression, lighting direction, background composition, and brushstroke style to ensure the result feels uniquely handcrafted. Ultra-detailed, gallery-worthy, classical oil painting, refined realism with artistic interpretation, gentle stylistic randomness for individuality.`;
 
     const imageResponse = await openai.images.generate({
       model: "dall-e-3",
