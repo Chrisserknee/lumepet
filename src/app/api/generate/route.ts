@@ -5,30 +5,99 @@ import { v4 as uuidv4 } from "uuid";
 import { CONFIG } from "@/lib/config";
 import { uploadImage, saveMetadata } from "@/lib/supabase";
 
-// Create watermarked version of image
+// Create watermarked version of image with LumePet logo
 async function createWatermarkedImage(inputBuffer: Buffer): Promise<Buffer> {
   const image = sharp(inputBuffer);
   const metadata = await image.metadata();
   const width = metadata.width || 1024;
   const height = metadata.height || 1024;
 
-  // Create SVG watermark overlay
+  // Load LumePet logo from public folder
+  const fs = await import("fs");
+  const path = await import("path");
+  const logoPath = path.join(process.cwd(), "public", "samples", "lumepet.png");
+  
+  let logoBuffer: Buffer;
+  try {
+    logoBuffer = fs.readFileSync(logoPath);
+  } catch (error) {
+    console.error("Failed to load logo, using text watermark:", error);
+    // Fallback to text watermark if logo not found
+    const watermarkSvg = `
+      <svg width="${width}" height="${height}">
+        <defs>
+          <pattern id="watermark" width="400" height="200" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
+            <text x="0" y="100" 
+                  font-family="Georgia, serif" 
+                  font-size="28" 
+                  font-weight="bold"
+                  fill="rgba(255,255,255,0.5)"
+                  text-anchor="start">
+              LUMEPET – PREVIEW ONLY
+            </text>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#watermark)"/>
+      </svg>
+    `;
+    return await sharp(inputBuffer)
+      .composite([
+        {
+          input: Buffer.from(watermarkSvg),
+          top: 0,
+          left: 0,
+        },
+      ])
+      .png()
+      .toBuffer();
+  }
+
+  // Get logo dimensions and resize it to be more intrusive
+  const logoImage = sharp(logoBuffer);
+  const logoMetadata = await logoImage.metadata();
+  const logoWidth = logoMetadata.width || 200;
+  const logoHeight = logoMetadata.height || 200;
+  
+  // Make logo larger - about 35% of image width for more intrusiveness
+  const watermarkSize = Math.max(width, height) * 0.35;
+  const watermarkAspectRatio = logoWidth / logoHeight;
+  const watermarkWidth = watermarkSize;
+  const watermarkHeight = watermarkSize / watermarkAspectRatio;
+
+  // Convert logo to base64 for SVG embedding
+  const logoBase64 = logoBuffer.toString("base64");
+  const logoMimeType = logoMetadata.format === "png" ? "image/png" : "image/jpeg";
+
+  // Create SVG with logo watermarks at multiple positions with low opacity
   const watermarkSvg = `
-    <svg width="${width}" height="${height}">
-      <defs>
-        <pattern id="watermark" width="400" height="200" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
-          <text x="0" y="100" 
-                font-family="Georgia, serif" 
-                font-size="28" 
-                font-weight="bold"
-                fill="rgba(255,255,255,0.4)"
-                text-anchor="start">
-            LUMEPET – PREVIEW ONLY
-          </text>
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#watermark)"/>
-      <rect width="100%" height="100%" fill="rgba(0,0,0,0.1)"/>
+    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <!-- Center watermark (largest, 40% opacity) -->
+      <image 
+        x="${Math.round((width - watermarkWidth) / 2)}" 
+        y="${Math.round((height - watermarkHeight) / 2)}" 
+        width="${Math.round(watermarkWidth)}" 
+        height="${Math.round(watermarkHeight)}" 
+        href="data:${logoMimeType};base64,${logoBase64}"
+        opacity="0.4"
+      />
+      <!-- Top-left corner (smaller, 35% opacity) -->
+      <image 
+        x="${Math.round(width * 0.08)}" 
+        y="${Math.round(height * 0.08)}" 
+        width="${Math.round(watermarkWidth * 0.5)}" 
+        height="${Math.round(watermarkHeight * 0.5)}" 
+        href="data:${logoMimeType};base64,${logoBase64}"
+        opacity="0.35"
+      />
+      <!-- Bottom-right corner (smaller, 35% opacity) -->
+      <image 
+        x="${Math.round(width * 0.92 - watermarkWidth * 0.5)}" 
+        y="${Math.round(height * 0.92 - watermarkHeight * 0.5)}" 
+        width="${Math.round(watermarkWidth * 0.5)}" 
+        height="${Math.round(watermarkHeight * 0.5)}" 
+        href="data:${logoMimeType};base64,${logoBase64}"
+        opacity="0.35"
+      />
     </svg>
   `;
 
@@ -38,6 +107,7 @@ async function createWatermarkedImage(inputBuffer: Buffer): Promise<Buffer> {
         input: Buffer.from(watermarkSvg),
         top: 0,
         left: 0,
+        blend: "over",
       },
     ])
     .png()
