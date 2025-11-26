@@ -253,6 +253,104 @@ h1, h2, h3, h4 {
   }
 }
 
+/* Sparkle effect around logo */
+.logo-sparkle-container {
+  position: relative;
+  display: inline-block;
+}
+
+.sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 220, 100, 0.9);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 8px rgba(255, 220, 100, 1),
+    0 0 16px rgba(255, 215, 80, 0.8),
+    0 0 24px rgba(255, 200, 60, 0.6);
+  pointer-events: none;
+}
+
+/* Position sparkles around the logo in a circle */
+.sparkle-1 { 
+  top: -15px; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  animation: sparkle-twinkle 2s ease-in-out infinite;
+  animation-delay: 0s; 
+}
+.sparkle-2 { 
+  top: 15px; 
+  right: -15px; 
+  animation: sparkle-twinkle 2s ease-in-out infinite;
+  animation-delay: 0.25s; 
+}
+.sparkle-3 { 
+  bottom: 15px; 
+  right: -15px; 
+  animation: sparkle-twinkle 2s ease-in-out infinite;
+  animation-delay: 0.5s; 
+}
+.sparkle-4 { 
+  bottom: -15px; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  animation: sparkle-twinkle 2s ease-in-out infinite;
+  animation-delay: 0.75s; 
+}
+.sparkle-5 { 
+  bottom: 15px; 
+  left: -15px; 
+  animation: sparkle-twinkle 2s ease-in-out infinite;
+  animation-delay: 1s; 
+}
+.sparkle-6 { 
+  top: 15px; 
+  left: -15px; 
+  animation: sparkle-twinkle 2s ease-in-out infinite;
+  animation-delay: 1.25s; 
+}
+.sparkle-7 { 
+  top: 35px; 
+  right: 25px; 
+  animation: sparkle-twinkle 2s ease-in-out infinite;
+  animation-delay: 1.5s; 
+}
+.sparkle-8 { 
+  bottom: 35px; 
+  left: 25px; 
+  animation: sparkle-twinkle 2s ease-in-out infinite;
+  animation-delay: 1.75s; 
+}
+
+@keyframes sparkle-twinkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Special handling for centered sparkles */
+.sparkle-1, .sparkle-4 {
+  animation-name: sparkle-twinkle-centered;
+}
+
+@keyframes sparkle-twinkle-centered {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) translateX(-50%);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) translateX(-50%);
+  }
+}
+
 .animate-bounce {
   animation: bounce 1s infinite;
 }

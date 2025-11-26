@@ -42,7 +42,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
         <div className="mb-6 animate-fade-in-up">
           <div className="flex justify-center">
             <div 
-              className="relative"
+              className="relative logo-sparkle-container"
               style={{
                 animation: 'pulse-glow 3s ease-in-out infinite'
               }}
@@ -55,6 +55,15 @@ export default function Hero({ onUploadClick }: HeroProps) {
                 className="object-contain animate-float"
                 priority
               />
+              {/* Sparkle particles */}
+              <span className="sparkle sparkle-1"></span>
+              <span className="sparkle sparkle-2"></span>
+              <span className="sparkle sparkle-3"></span>
+              <span className="sparkle sparkle-4"></span>
+              <span className="sparkle sparkle-5"></span>
+              <span className="sparkle sparkle-6"></span>
+              <span className="sparkle sparkle-7"></span>
+              <span className="sparkle sparkle-8"></span>
             </div>
           </div>
         </div>
