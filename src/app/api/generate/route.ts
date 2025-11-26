@@ -165,6 +165,65 @@ The description must be accurate enough that the owner instantly recognizes thei
     const speciesMatch = petDescription.match(/\[(DOG|CAT|RABBIT|BIRD|HAMSTER|GUINEA PIG|FERRET|HORSE|PET)\]/i);
     const species = speciesMatch ? speciesMatch[1].toUpperCase() : "PET";
 
+    // Randomize elements for unique paintings
+    const cushions = [
+      "deep emerald green velvet cushion with gold floral embroidery and silk tassels",
+      "rich burgundy velvet cushion with silver damask pattern and braided trim",
+      "royal blue satin cushion with gold leaf scrollwork and pearl beading",
+      "deep purple velvet cushion with gold heraldic embroidery and fringe",
+      "crimson silk cushion with intricate gold brocade and corner rosettes",
+      "forest green velvet ottoman with antique gold filigree trim",
+      "navy blue velvet cushion with silver thread arabesques and tassels",
+      "wine red damask cushion with gold crest embroidery and silk piping"
+    ];
+    
+    const robes = [
+      "deep crimson velvet robe with white ermine fur collar and gold clasps",
+      "royal purple velvet cape with ermine trim and pearl buttons",
+      "midnight blue velvet mantle with silver fox fur lining",
+      "burgundy brocade coat with gold embroidery and ermine cuffs",
+      "emerald green velvet cloak with sable fur trim and jeweled brooch",
+      "rich maroon satin robe with gold damask pattern and ermine collar",
+      "deep plum velvet cape with chinchilla fur trim and ruby clasp",
+      "antique gold brocade jacket with ermine lapels and emerald buttons"
+    ];
+    
+    const jewelry = [
+      "heavy gold chain with large ruby-studded medallion",
+      "pearl strand necklace with emerald pendant",
+      "ornate gold collar with sapphire centerpiece",
+      "antique silver chain with diamond-encrusted locket",
+      "gold rope necklace with carved jade medallion",
+      "jeweled gold torque with amethyst drops",
+      "pearl and gold choker with cameo pendant",
+      "layered gold chains with family crest medallion"
+    ];
+    
+    const backgrounds = [
+      "warm sienna background with burgundy velvet drapes and marble column",
+      "rich umber backdrop with olive green curtains and gilded frame visible",
+      "deep brown study with leather-bound books and brass candlestick",
+      "warm ochre wall with tapestry glimpse and wooden paneling",
+      "muted amber background with wine-colored drapery and ornate mirror",
+      "soft brown interior with brocade curtains and antique vase",
+      "golden-brown library setting with globe and quill on desk",
+      "warm sepia backdrop with velvet curtains parted to show landscape"
+    ];
+    
+    const lightingDirections = [
+      "from upper left, creating gentle shadows on the right",
+      "from the left side, with soft fill light from the right",
+      "from above and slightly left, with warm reflected light below",
+      "soft diffused light from a window on the left side"
+    ];
+
+    // Pick random elements
+    const cushion = cushions[Math.floor(Math.random() * cushions.length)];
+    const robe = robes[Math.floor(Math.random() * robes.length)];
+    const jewelryItem = jewelry[Math.floor(Math.random() * jewelry.length)];
+    const background = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+    const lighting = lightingDirections[Math.floor(Math.random() * lightingDirections.length)];
+
     // Step 2: Generate Renaissance royal portrait with DALL-E
     const generationPrompt = `IMPORTANT: Generate a portrait of a ${species}, NOT any other animal.
 
@@ -181,30 +240,30 @@ ${petDescription}
    - Match the EXACT colors described above
 3. The pet must be recognizable as the specific animal described
 
-===== COMPOSITION (MEDIUM-WIDE SHOT) =====
-- Frame the subject from mid-distance showing FULL BODY on the cushion
-- Include substantial background space around the subject
-- The pet should occupy about 60% of the frame height, not filling the entire canvas
-- Show the complete velvet cushion with decorative tassels at corners
-- Include visible floor space in front of the cushion
+===== COMPOSITION (WIDE SHOT - PULL BACK) =====
+- Frame from a DISTANCE showing the pet's FULL BODY with generous space around
+- The pet should occupy only 40-50% of the frame height
+- Show LOTS of background and environment around the subject
+- Include the complete cushion, visible floor, and architectural elements
+- The scene should feel like a full room portrait, not a close-up
 
-===== ROYAL ATTIRE =====
-- Luxurious velvet robe or cape (burgundy, crimson, or purple) with ermine fur trim
-- Ornate gold medallion necklace with gemstone
-- Pet posed regally on an emerald/teal velvet cushion with gold embroidered scrollwork
+===== UNIQUE ELEMENTS FOR THIS PAINTING =====
+- CUSHION: ${cushion}
+- ATTIRE: ${robe}
+- JEWELRY: ${jewelryItem}
+- SETTING: ${background}
 
 ===== LIGHTING (BRIGHT BUT CLASSICAL) =====
-- Well-lit scene with warm golden lighting from upper left
+- Warm golden light ${lighting}
 - Soft shadows, NOT overly dark or muddy
-- Rich but BRIGHT color palette - the pet's features should be clearly visible
-- Warm amber/golden tones throughout
-- Background: warm brown with subtle velvet drapery, but NOT too dark
+- Rich but BRIGHT palette - pet's features clearly visible
+- Overall warm, inviting atmosphere
 
 ===== ARTISTIC STYLE =====
-- Classical oil painting with visible brushstrokes
-- Museum-quality Dutch Golden Age portraiture
-- Noble, dignified expression
-- Three-quarter view pose with front paws on cushion`;
+- Classical oil painting with visible brushstrokes and canvas texture
+- Museum-quality Dutch Golden Age portraiture style
+- Noble, dignified pose - seated regally on the cushion
+- Unique artistic interpretation - like a one-of-a-kind commissioned painting`;
 
     const imageResponse = await openai.images.generate({
       model: "gpt-image-1",
