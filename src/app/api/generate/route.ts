@@ -2,26 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
-import fs from "fs/promises";
-import path from "path";
 import { CONFIG } from "@/lib/config";
-
-// Ensure generated images directory exists
-async function ensureGeneratedDir() {
-  const dir = path.join(process.cwd(), "public", "generated");
-  try {
-    await fs.access(dir);
-  } catch {
-    await fs.mkdir(dir, { recursive: true });
-  }
-  return dir;
-}
+import { uploadImage, saveMetadata } from "@/lib/supabase";
 
 // Create watermarked version of image
-async function createWatermarkedImage(
-  inputBuffer: Buffer,
-  outputPath: string
-): Promise<void> {
+async function createWatermarkedImage(inputBuffer: Buffer): Promise<Buffer> {
   const image = sharp(inputBuffer);
   const metadata = await image.metadata();
   const width = metadata.width || 1024;
@@ -47,7 +32,7 @@ async function createWatermarkedImage(
     </svg>
   `;
 
-  await image
+  return await sharp(inputBuffer)
     .composite([
       {
         input: Buffer.from(watermarkSvg),
@@ -55,7 +40,8 @@ async function createWatermarkedImage(
         left: 0,
       },
     ])
-    .toFile(outputPath);
+    .png()
+    .toBuffer();
 }
 
 export async function POST(request: NextRequest) {
@@ -68,7 +54,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize OpenAI client lazily
+    // Check for Supabase config
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json(
+        { error: "Storage not configured" },
+        { status: 500 }
+      );
+    }
+
+    // Initialize OpenAI client
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -107,80 +101,119 @@ export async function POST(request: NextRequest) {
     // Generate unique ID for this generation
     const imageId = uuidv4();
 
-    // Ensure output directory exists
-    const generatedDir = await ensureGeneratedDir();
-
-    // Process original image to base64 for OpenAI
+    // Process original image for vision API
     const processedImage = await sharp(buffer)
-      .resize(1024, 1024, { fit: "cover" })
-      .png()
+      .resize(512, 512, { fit: "cover" })
+      .jpeg({ quality: 85 })
       .toBuffer();
 
-    // Convert Buffer to Uint8Array for File constructor compatibility
-    const uint8Array = new Uint8Array(processedImage);
+    const base64Image = processedImage.toString("base64");
 
-    // Call OpenAI Images API to generate Renaissance portrait
-    // Using the gpt-image-1 model with the edit endpoint
-    const response = await openai.images.edit({
-      model: "gpt-image-1",
-      image: new File([uint8Array], "image.png", { type: "image/png" }),
-      prompt: CONFIG.GENERATION_PROMPT,
-      n: 1,
-      size: "1024x1024",
+    // Step 1: Use GPT-4o Vision to analyze the pet
+    const visionResponse = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Analyze this pet photo and provide a detailed description for creating a Renaissance oil painting portrait. Include:
+1. Type of animal (dog, cat, etc.) and breed if identifiable
+2. Fur/coat color and pattern
+3. Eye color
+4. Distinctive features (ear shape, markings, expression)
+5. The pet's apparent personality/demeanor
+
+Format your response as a single detailed paragraph that can be used as an art prompt.`,
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Image}`,
+              },
+            },
+          ],
+        },
+      ],
+      max_tokens: 500,
     });
 
-    // Get the generated image data
-    const imageData = response.data?.[0];
-    
-    if (!imageData) {
-      throw new Error("No image generated from OpenAI");
+    const petDescription = visionResponse.choices[0]?.message?.content || "a beloved pet";
+
+    // Step 2: Generate Renaissance portrait with DALL-E 3
+    const generationPrompt = `A highly detailed Renaissance oil painting portrait of ${petDescription}. 
+
+Style requirements:
+- Classical Renaissance painting technique with visible brushstrokes like Rembrandt or Titian
+- Rich, warm color palette with deep burgundies, golds, and earth tones
+- Dramatic chiaroscuro lighting with a dark, atmospheric background
+- The pet is depicted nobly, wearing an ornate Renaissance-era collar or ruff
+- Baroque-style draped velvet curtains in the background
+- Museum-quality fine art appearance with authentic canvas texture
+- The pet looks dignified and regal, as if posing for a royal portrait
+- Ornate gilded frame visible at edges`;
+
+    const imageResponse = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: generationPrompt,
+      n: 1,
+      size: "1024x1024",
+      quality: "hd",
+      style: "vivid",
+    });
+
+    const generatedImageUrl = imageResponse.data[0]?.url;
+
+    if (!generatedImageUrl) {
+      throw new Error("No image generated");
     }
 
-    let generatedBuffer: Buffer;
+    // Download the generated image
+    const downloadResponse = await fetch(generatedImageUrl);
+    const arrayBuffer = await downloadResponse.arrayBuffer();
+    const generatedBuffer = Buffer.from(arrayBuffer);
 
-    // Handle both URL and base64 responses
-    if (imageData.b64_json) {
-      generatedBuffer = Buffer.from(imageData.b64_json, "base64");
-    } else if (imageData.url) {
-      // Download the generated image
-      const imageResponse = await fetch(imageData.url);
-      const arrayBuffer = await imageResponse.arrayBuffer();
-      generatedBuffer = Buffer.from(arrayBuffer);
-    } else {
-      throw new Error("Invalid response from OpenAI");
-    }
+    // Create watermarked preview
+    const watermarkedBuffer = await createWatermarkedImage(generatedBuffer);
 
-    // Save the clean HD image (never shown before purchase)
-    const hdPath = path.join(generatedDir, `${imageId}-hd.png`);
-    await sharp(generatedBuffer).png({ quality: 100 }).toFile(hdPath);
-
-    // Create and save watermarked preview
-    const previewPath = path.join(generatedDir, `${imageId}-preview.png`);
-    await createWatermarkedImage(generatedBuffer, previewPath);
-
-    // Store metadata (in production, use a database)
-    const metadataPath = path.join(generatedDir, `${imageId}.json`);
-    await fs.writeFile(
-      metadataPath,
-      JSON.stringify({
-        id: imageId,
-        createdAt: new Date().toISOString(),
-        paid: false,
-      })
+    // Upload HD image to Supabase Storage
+    const hdUrl = await uploadImage(
+      generatedBuffer,
+      `${imageId}-hd.png`,
+      "image/png"
     );
+
+    // Upload watermarked preview to Supabase Storage
+    const previewUrl = await uploadImage(
+      watermarkedBuffer,
+      `${imageId}-preview.png`,
+      "image/png"
+    );
+
+    // Save metadata to Supabase database
+    await saveMetadata(imageId, {
+      created_at: new Date().toISOString(),
+      paid: false,
+      pet_description: petDescription,
+      hd_url: hdUrl,
+      preview_url: previewUrl,
+    });
 
     return NextResponse.json({
       imageId,
-      previewUrl: `/generated/${imageId}-preview.png`,
+      previewUrl,
     });
   } catch (error) {
     console.error("Generation error:", error);
 
     // Handle specific OpenAI errors
     if (error instanceof OpenAI.APIError) {
+      console.error("OpenAI API Error:", error.message, error.status);
+      
       if (error.status === 401) {
         return NextResponse.json(
-          { error: "Invalid OpenAI API key" },
+          { error: "Invalid API key. Please check your configuration." },
           { status: 500 }
         );
       }
@@ -188,6 +221,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { error: "Too many requests. Please try again in a moment." },
           { status: 429 }
+        );
+      }
+      if (error.status === 400) {
+        return NextResponse.json(
+          { error: "Invalid request. Please try a different image." },
+          { status: 400 }
         );
       }
     }

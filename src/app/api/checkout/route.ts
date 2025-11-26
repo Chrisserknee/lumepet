@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import fs from "fs/promises";
-import path from "path";
 import { CONFIG } from "@/lib/config";
+import { getMetadata } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize Stripe client lazily
+    // Initialize Stripe client
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     // Parse request body
@@ -28,13 +27,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify the image exists
-    const generatedDir = path.join(process.cwd(), "public", "generated");
-    const hdPath = path.join(generatedDir, `${imageId}-hd.png`);
-
-    try {
-      await fs.access(hdPath);
-    } catch {
+    // Verify the image exists in Supabase
+    const metadata = await getMetadata(imageId);
+    
+    if (!metadata) {
       return NextResponse.json(
         { error: "Portrait not found. Please generate a new one." },
         { status: 404 }
@@ -51,7 +47,7 @@ export async function POST(request: NextRequest) {
             product_data: {
               name: CONFIG.PRODUCT_NAME,
               description: CONFIG.PRODUCT_DESCRIPTION,
-              images: [`${CONFIG.BASE_URL}/generated/${imageId}-preview.png`],
+              images: [metadata.preview_url],
             },
             unit_amount: CONFIG.PRICE_AMOUNT,
           },

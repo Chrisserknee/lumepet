@@ -9,18 +9,22 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const imageId = searchParams.get("imageId");
   
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
-    // Validate that imageId exists and session was successful
-    // In production, you would verify the payment via Stripe webhook
-    // For now, we trust the success redirect + validate image exists
+    // Fetch the image metadata to get the HD URL
     if (imageId) {
-      // Check if the HD image exists
-      fetch(`/generated/${imageId}-hd.png`, { method: "HEAD" })
-        .then((res) => {
-          setIsValid(res.ok);
+      fetch(`/api/image-info?imageId=${imageId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.hdUrl) {
+            setImageUrl(data.hdUrl);
+            setIsValid(true);
+          } else {
+            setIsValid(false);
+          }
         })
         .catch(() => {
           setIsValid(false);
@@ -36,7 +40,6 @@ function SuccessContent() {
     setIsDownloading(true);
     
     try {
-      // Use the download API route
       const response = await fetch(`/api/download?imageId=${imageId}`);
       
       if (!response.ok) {
@@ -46,7 +49,6 @@ function SuccessContent() {
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       
-      // Create temporary link and trigger download
       const link = document.createElement("a");
       link.href = url;
       link.download = `pet-renaissance-${imageId}.png`;
@@ -146,13 +148,16 @@ function SuccessContent() {
         <div className="animate-fade-in-up delay-200">
           <div className="ornate-frame max-w-lg mx-auto mb-8">
             <div className="relative aspect-square rounded overflow-hidden shadow-2xl">
-              <Image
-                src={`/generated/${imageId}-hd.png`}
-                alt="Your Renaissance pet portrait"
-                fill
-                className="object-cover"
-                priority
-              />
+              {imageUrl && (
+                <Image
+                  src={imageUrl}
+                  alt="Your Renaissance pet portrait"
+                  fill
+                  className="object-cover"
+                  priority
+                  unoptimized
+                />
+              )}
             </div>
           </div>
         </div>

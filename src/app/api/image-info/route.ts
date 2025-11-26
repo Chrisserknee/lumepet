@@ -3,7 +3,6 @@ import { getMetadata } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   try {
-    // Get imageId from query params
     const { searchParams } = new URL(request.url);
     const imageId = searchParams.get("imageId");
 
@@ -33,39 +32,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if paid (optional - you might want to enforce this)
-    // if (!metadata.paid) {
-    //   return NextResponse.json(
-    //     { error: "Payment required" },
-    //     { status: 402 }
-    //   );
-    // }
-
-    // Fetch the HD image from Supabase Storage
-    const imageResponse = await fetch(metadata.hd_url);
-    
-    if (!imageResponse.ok) {
-      return NextResponse.json(
-        { error: "Failed to fetch image" },
-        { status: 500 }
-      );
-    }
-
-    const imageBuffer = await imageResponse.arrayBuffer();
-
-    // Return the image with download headers
-    return new NextResponse(imageBuffer, {
-      headers: {
-        "Content-Type": "image/png",
-        "Content-Disposition": `attachment; filename="pet-renaissance-${imageId}.png"`,
-        "Content-Length": imageBuffer.byteLength.toString(),
-      },
+    return NextResponse.json({
+      imageId: metadata.id,
+      hdUrl: metadata.hd_url,
+      previewUrl: metadata.preview_url,
+      paid: metadata.paid,
+      createdAt: metadata.created_at,
     });
   } catch (error) {
-    console.error("Download error:", error);
+    console.error("Image info error:", error);
     return NextResponse.json(
-      { error: "Failed to download image" },
+      { error: "Failed to get image info" },
       { status: 500 }
     );
   }
 }
+
