@@ -161,7 +161,7 @@ Ultra-detailed, realistic oil painting, soft diffused light, painterly texture, 
       style: "vivid",
     });
 
-    const generatedImageUrl = imageResponse.data[0]?.url;
+    const generatedImageUrl = imageResponse.data?.[0]?.url;
 
     if (!generatedImageUrl) {
       throw new Error("No image generated");
