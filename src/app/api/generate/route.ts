@@ -231,49 +231,49 @@ Format your response as: "[SPECIES] UNIQUE FEATURES: [list the 3-5 most distinct
     
     console.log("Detected species:", species);
 
-    // Randomize elements for unique paintings
+    // Randomize elements for unique paintings - elegant palette: light blues, blacks, whites
     const cushions = [
-      "BRIGHT EMERALD GREEN silk velvet cushion with gold scrollwork embroidery and golden tassels",
-      "RICH JADE GREEN plush velvet cushion with pink rose and gold vine embroidery, silk tassels",
-      "VIBRANT TEAL satin cushion with gold floral embroidery and corner rosettes",
-      "DEEP FOREST GREEN velvet cushion with delicate pink flowers and gold leaf trim",
-      "BRIGHT SAGE GREEN silk cushion with gold botanical embroidery and golden fringe",
-      "RICH OLIVE GREEN velvet cushion with pink and gold floral pattern, silk tassels",
-      "JEWEL-TONE GREEN plush cushion with ornate gold scrollwork and corner tassels",
-      "SATURATED HUNTER GREEN velvet cushion with gold embroidery and silk trim"
+      "SOFT POWDER BLUE silk velvet cushion with white lace trim and silver thread embroidery",
+      "PURE WHITE plush velvet cushion with delicate light blue floral embroidery and silver accents",
+      "ELEGANT LIGHT PERIWINKLE satin cushion with white pearls and silver scrollwork",
+      "DEEP CHARCOAL BLACK velvet cushion with white ermine trim and silver embroidery",
+      "PALE SKY BLUE silk cushion with white lace edges and subtle silver details",
+      "RICH NAVY BLUE velvet cushion with white satin trim and silver thread patterns",
+      "IVORY WHITE plush cushion with light blue and silver botanical embroidery",
+      "SLATE GRAY velvet cushion with white lace border and silver accents"
     ];
     
     const robes = [
-      "BRIGHT IVORY CREAM silk robe with colorful floral embroidery (pink roses, green leaves, gold accents), white ermine fur trim with black spots, delicate lace collar",
-      "SHIMMERING SKY BLUE satin cape with pink and gold rose embroidery, pristine ermine trim with spots, ornate lace ruff",
-      "LUMINOUS CHAMPAGNE GOLD brocade mantle with colorful floral patterns (pink, green, gold), white ermine lining with black spots",
-      "RICH CHARCOAL GRAY velvet robe with gold and pink floral embroidery, spotted ermine collar, cream lace trim",
-      "SILKY BLUSH PINK satin cloak with gold and green botanical embroidery, ermine fur trim, layered lace collar",
-      "DEEP BURGUNDY velvet cape with bright gold rose embroidery and pink accents, spotted ermine collar, cream lace ruff",
-      "BRIGHT PERIWINKLE BLUE satin robe with gold and pink floral details, ermine trim, delicate lace accents",
-      "LUMINOUS ANTIQUE WHITE silk damask robe with colorful embroidery (gold vines, pink flowers, green leaves), spotted ermine lapels"
+      "PURE WHITE silk robe with light blue floral embroidery and silver thread details, white ermine fur trim with black spots, delicate white lace collar",
+      "SHIMMERING LIGHT BLUE satin cape with white pearl accents and silver embroidery, pristine white ermine trim with spots, ornate white lace ruff",
+      "ELEGANT CHARCOAL BLACK velvet robe with white ermine lining and black spots, silver thread embroidery, white lace trim",
+      "SOFT POWDER BLUE velvet robe with white floral embroidery and silver accents, spotted white ermine collar, white lace trim",
+      "LUMINOUS ANTIQUE WHITE silk damask robe with light blue and silver botanical embroidery, white ermine fur trim, layered white lace collar",
+      "RICH NAVY BLUE velvet cape with white ermine trim and silver embroidery, spotted white ermine collar, white lace ruff",
+      "PALE PERIWINKLE BLUE satin robe with white pearl details and silver thread, white ermine trim, delicate white lace accents",
+      "ELEGANT SLATE GRAY velvet robe with white and light blue embroidery, white ermine lapels with black spots, white lace collar"
     ];
     
     const jewelry = [
-      "layered gold chains with delicate pearl strands and small ruby pendant, elegant and refined",
-      "multiple pearl necklaces layered together with a gold floral centerpiece and teardrop gem",
-      "delicate gold filigree collar with rose-pink gems and small pearl drops",
-      "layered antique gold necklaces with cameo pendant and pearl accents",
-      "elegant triple-strand pearl choker with gold flower clasp and small gemstone",
-      "refined gold chain with floral gem clusters in pink and gold, layered with pearls",
-      "multiple delicate chains - pearls, gold links, and a small ornate pendant",
-      "layered jewelry: pearl strand, gold chain with pendant, and delicate gem necklace"
+      "layered silver chains with delicate white pearl strands and small sapphire pendant, elegant and refined",
+      "multiple white pearl necklaces layered together with a silver floral centerpiece and teardrop gem",
+      "delicate silver filigree collar with light blue gems and small white pearl drops",
+      "layered antique silver necklaces with cameo pendant and white pearl accents",
+      "elegant triple-strand white pearl choker with silver flower clasp and small blue gemstone",
+      "refined silver chain with floral gem clusters in light blue and white, layered with white pearls",
+      "multiple delicate chains - white pearls, silver links, and a small ornate pendant",
+      "layered jewelry: white pearl strand, silver chain with pendant, and delicate blue gem necklace"
     ];
     
     const backgrounds = [
-      "DARK background with RICH BURGUNDY velvet drape on one side and golden accent on the other",
-      "DEEP shadowy background with VIBRANT TEAL silk curtain and warm gold column",
-      "DARK atmospheric backdrop with BRIGHT CRIMSON velvet drapery cascading on the side",
-      "MOODY dark background with RICH MAGENTA velvet drape and gold architectural detail",
-      "SHADOWY backdrop with DEEP EMERALD GREEN velvet curtain and warm candlelight glow",
-      "DARK old master background with SATURATED BURGUNDY and GOLD silk drapes",
-      "DEEP black backdrop with BRIGHT ROYAL BLUE silk drape and gilded frame edge",
-      "CLASSIC dark background with RICH PLUM velvet and TEAL accents visible"
+      "DARK background with RICH NAVY BLUE velvet drape on one side and white accent on the other",
+      "DEEP shadowy background with LIGHT BLUE silk curtain and white column",
+      "DARK atmospheric backdrop with CHARCOAL BLACK velvet drapery cascading on the side",
+      "MOODY dark background with SLATE GRAY velvet drape and white architectural detail",
+      "SHADOWY backdrop with DEEP BLACK velvet curtain and soft white candlelight glow",
+      "DARK old master background with RICH NAVY BLUE and WHITE silk drapes",
+      "DEEP black backdrop with LIGHT PERIWINKLE BLUE silk drape and white frame edge",
+      "CLASSIC dark background with CHARCOAL GRAY velvet and LIGHT BLUE accents visible"
     ];
     
     const lightingDirections = [
@@ -300,18 +300,25 @@ ${petDescription}${genderInfo}
 
 This ${species} portrait must look like THIS EXACT ${species}. ${notSpecies}
 
-=== STYLE: BRIGHT, COLORFUL, SILKY OIL PAINTING ===
-Classical oil painting with BRIGHT, SATURATED colors and SILKY luminous textures.
+=== STYLE: ELEGANT, REFINED OIL PAINTING ===
+Classical oil painting with ELEGANT, REFINED colors and SILKY luminous textures.
+
+COLOR PALETTE - ELEGANT AND REFINED:
+- PRIMARY COLORS: Light blues, pure whites, rich blacks, charcoal grays
+- ACCENT COLORS: Silver threads, white pearls, light blue gems (minimal use)
+- AVOID: Yellow, gold, warm tones - keep palette cool and elegant
+- FABRICS: White ermine fur with black spots, white lace, light blue satin, charcoal velvet
+- JEWELRY: White pearls, silver, light blue sapphires (no gold)
+- Keep colors sophisticated and understated - elegant, not overdone
 
 KEY QUALITIES:
-- BRIGHT, VIBRANT colors - rich greens, warm golds, colorful embroidery
 - SILKY, LUMINOUS fabric textures - shimmering satin, plush velvet
 - Well-lit subject against dark background - the pet GLOWS with light
-- Colorful floral embroidery details on fabrics (pink roses, gold, green leaves)
+- Delicate floral embroidery in light blue, white, and silver (no gold)
 - Soft, smooth brushwork with luminous glazing technique
-- Rich jewel tones throughout
+- Refined color palette - elegant blues, whites, blacks
 
-The ${species} wears ${robe}, sits on ${cushion}, adorned with ${jewelryItem}. ${background}. Bright, flattering light illuminating the subject beautifully. Museum-quality fine art with rich, saturated colors.`;
+The ${species} wears ${robe}, sits on ${cushion}, adorned with ${jewelryItem}. ${background}. Bright, flattering light illuminating the subject beautifully. Museum-quality fine art with elegant, refined colors.`;
 
     // Generate image with GPT-Image-1 (OpenAI's newest image model)
     console.log("Generating image with gpt-image-1...");
