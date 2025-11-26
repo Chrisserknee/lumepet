@@ -145,12 +145,11 @@ Format your response as a single detailed paragraph that can be used as an art p
     const generationPrompt = `A museum-quality fine art oil painting of a majestic ${petDescription}, portrayed with rich texture and expressive brushstrokes. The subject is set within a natural environment that softly complements its habitat. Dramatic yet elegant lighting, painterly depth, and subtle color variations create a timeless, classical atmosphere. The image features unique pose, expression, lighting direction, background composition, and brushstroke style to ensure the result feels uniquely handcrafted. Ultra-detailed, gallery-worthy, classical oil painting, refined realism with artistic interpretation, gentle stylistic randomness for individuality.`;
 
     const imageResponse = await openai.images.generate({
-      model: "dall-e-3",
+      model: "gpt-image-1",
       prompt: generationPrompt,
       n: 1,
       size: "1024x1024",
-      quality: "hd",
-      style: "vivid",
+      quality: "high",
     });
 
     const generatedImageUrl = imageResponse.data?.[0]?.url;
