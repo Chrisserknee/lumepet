@@ -47,6 +47,10 @@ export async function POST(request: NextRequest) {
     // Save email to emails table for marketing
     await saveEmail(email, imageId, "checkout");
 
+    // Use 50 cents for testing (override env var if needed)
+    const priceAmount = 50; // 50 cents for testing
+    console.log(`Creating checkout session with price: ${priceAmount} cents ($${(priceAmount / 100).toFixed(2)})`);
+
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -60,7 +64,7 @@ export async function POST(request: NextRequest) {
               description: CONFIG.PRODUCT_DESCRIPTION,
               images: [metadata.preview_url],
             },
-            unit_amount: CONFIG.PRICE_AMOUNT,
+            unit_amount: priceAmount,
           },
           quantity: 1,
         },
