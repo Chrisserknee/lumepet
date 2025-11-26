@@ -14,7 +14,7 @@ export default function Footer() {
           <div className="flex items-center gap-3">
             <div
               style={{
-                filter: 'drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 30px rgba(255, 223, 0, 0.6)) drop-shadow(0 0 45px rgba(255, 200, 0, 0.4))'
+                filter: 'drop-shadow(0 0 6px rgba(255, 220, 100, 1)) drop-shadow(0 0 12px rgba(255, 215, 80, 0.9)) drop-shadow(0 0 18px rgba(255, 200, 60, 0.7))'
               }}
             >
               <Image
