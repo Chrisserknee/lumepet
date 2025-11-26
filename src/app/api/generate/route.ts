@@ -152,16 +152,26 @@ Format your response as a single detailed paragraph that can be used as an art p
       quality: "high",
     });
 
-    const generatedImageUrl = imageResponse.data?.[0]?.url;
+    const imageData = imageResponse.data?.[0];
 
-    if (!generatedImageUrl) {
+    if (!imageData) {
       throw new Error("No image generated");
     }
 
-    // Download the generated image
-    const downloadResponse = await fetch(generatedImageUrl);
-    const arrayBuffer = await downloadResponse.arrayBuffer();
-    const generatedBuffer = Buffer.from(arrayBuffer);
+    let generatedBuffer: Buffer;
+
+    // Handle both base64 and URL responses
+    if (imageData.b64_json) {
+      // gpt-image-1 returns base64
+      generatedBuffer = Buffer.from(imageData.b64_json, "base64");
+    } else if (imageData.url) {
+      // DALL-E 3 returns URL
+      const downloadResponse = await fetch(imageData.url);
+      const arrayBuffer = await downloadResponse.arrayBuffer();
+      generatedBuffer = Buffer.from(arrayBuffer);
+    } else {
+      throw new Error("Invalid image response format");
+    }
 
     // Create watermarked preview
     const watermarkedBuffer = await createWatermarkedImage(generatedBuffer);
