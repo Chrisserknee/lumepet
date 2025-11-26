@@ -5,6 +5,38 @@ import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+// Grant purchase bonus generations
+const grantPurchaseBonus = () => {
+  if (typeof window === "undefined") return;
+  
+  const STORAGE_KEY = "lumepet_generation_limits";
+  const stored = localStorage.getItem(STORAGE_KEY);
+  
+  let limits: { freeGenerations: number; freeRetriesUsed: number; purchases: number };
+  
+  if (stored) {
+    try {
+      limits = JSON.parse(stored);
+    } catch {
+      limits = { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0 };
+    }
+  } else {
+    limits = { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0 };
+  }
+  
+  // Only increment if this purchase hasn't been counted yet
+  // Check sessionStorage to prevent double-counting on page refresh
+  const lastPurchase = sessionStorage.getItem("last_purchase_time");
+  const now = Date.now();
+  
+  // Only grant bonus if it's been more than 5 seconds since last grant (prevents refresh abuse)
+  if (!lastPurchase || (now - parseInt(lastPurchase)) > 5000) {
+    limits.purchases += 1;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(limits));
+    sessionStorage.setItem("last_purchase_time", now.toString());
+  }
+};
+
 function SuccessContent() {
   const searchParams = useSearchParams();
   const imageId = searchParams.get("imageId");
@@ -12,6 +44,11 @@ function SuccessContent() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  
+  // Grant purchase bonus when page loads (after successful payment)
+  useEffect(() => {
+    grantPurchaseBonus();
+  }, []);
 
   useEffect(() => {
     if (imageId) {

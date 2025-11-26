@@ -28,6 +28,74 @@ const VICTORIAN_PHRASES = [
   "A masterpiece takes form...",
 ];
 
+// Retry limit management using localStorage
+const STORAGE_KEY = "lumepet_generation_limits";
+
+interface GenerationLimits {
+  freeGenerations: number; // Total free generations used (starts at 0)
+  freeRetriesUsed: number; // Free retries used (max 1)
+  purchases: number; // Number of purchases made
+  lastReset?: string; // Date of last reset (optional for daily limits)
+}
+
+const getLimits = (): GenerationLimits => {
+  if (typeof window === "undefined") {
+    return { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0 };
+  }
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0 };
+    }
+  }
+  return { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0 };
+};
+
+const saveLimits = (limits: GenerationLimits) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(limits));
+  }
+};
+
+const canGenerate = (limits: GenerationLimits): { allowed: boolean; reason?: string } => {
+  // Free tier: 1 initial generation + 1 free retry = 2 total free
+  const freeLimit = 2;
+  const freeUsed = limits.freeGenerations;
+  
+  // Each purchase grants 5 additional generations
+  const purchaseBonus = limits.purchases * 5;
+  const totalAllowed = freeLimit + purchaseBonus;
+  const totalUsed = freeUsed;
+  
+  if (totalUsed >= totalAllowed) {
+    return {
+      allowed: false,
+      reason: `You've reached your generation limit. ${limits.purchases > 0 ? `You have ${limits.purchases} purchase(s) granting ${purchaseBonus} extra generations.` : "Purchase an image to unlock more generations!"}`,
+    };
+  }
+  
+  return { allowed: true };
+};
+
+const incrementGeneration = (isRetry: boolean = false) => {
+  const limits = getLimits();
+  limits.freeGenerations += 1;
+  if (isRetry) {
+    limits.freeRetriesUsed = 1;
+  }
+  saveLimits(limits);
+  return limits;
+};
+
+const addPurchase = () => {
+  const limits = getLimits();
+  limits.purchases += 1;
+  saveLimits(limits);
+  return limits;
+};
+
 export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
   const [stage, setStage] = useState<Stage>("preview");
   const [result, setResult] = useState<GeneratedResult | null>(null);
@@ -41,6 +109,8 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [gender, setGender] = useState<Gender>(null);
+  const [generationLimits, setGenerationLimits] = useState<GenerationLimits>(getLimits());
+  const [limitCheck, setLimitCheck] = useState<{ allowed: boolean; reason?: string } | null>(null);
 
   // Set preview URL when file is provided
   useEffect(() => {
@@ -48,6 +118,17 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
       setPreviewUrl(URL.createObjectURL(file));
     }
   }, [file, previewUrl]);
+
+  // Check generation limits on mount and when file changes
+  useEffect(() => {
+    const limits = getLimits();
+    setGenerationLimits(limits);
+    const check = canGenerate(limits);
+    setLimitCheck(check);
+    
+    // Check if user has used their free retry
+    setRetryUsed(limits.freeRetriesUsed >= 1);
+  }, [file]);
 
   // Phrase cycling animation during generation - slow and elegant
   useEffect(() => {
@@ -140,6 +221,14 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
   const handleGenerate = async () => {
     if (!file) return;
     
+    // Check limits before generating
+    const limits = getLimits();
+    const check = canGenerate(limits);
+    if (!check.allowed) {
+      setError(check.reason || "Generation limit reached. Please purchase an image to unlock more generations.");
+      return;
+    }
+    
     setStage("generating");
     setError(null);
     setCurrentPhrase(0);
@@ -184,6 +273,13 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
       }
 
       setResult(data);
+      
+      // Increment generation count (not a retry)
+      const updatedLimits = incrementGeneration(false);
+      setGenerationLimits(updatedLimits);
+      const newCheck = canGenerate(updatedLimits);
+      setLimitCheck(newCheck);
+      
       // Set 15-minute expiration timer
       setExpirationTime(Date.now() + 15 * 60 * 1000);
       setStage("result");
@@ -197,10 +293,29 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
   };
 
   const handleRetry = useCallback(() => {
-    if (retryUsed) return;
+    const limits = getLimits();
+    
+    // Check if retry is allowed
+    if (limits.freeRetriesUsed >= 1) {
+      setError("You've already used your free retry. Purchase an image to unlock more generations!");
+      return;
+    }
+    
+    // Check overall generation limit
+    const check = canGenerate(limits);
+    if (!check.allowed) {
+      setError(check.reason || "Generation limit reached.");
+      return;
+    }
+    
     setRetryUsed(true);
     setResult(null);
     setExpirationTime(null);
+    
+    // Increment as retry
+    const updatedLimits = incrementGeneration(true);
+    setGenerationLimits(updatedLimits);
+    
     handleGenerate();
   }, [retryUsed, file]);
 
@@ -254,10 +369,17 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
     setResult(null);
     setStage("preview");
     setError(null);
-    setRetryUsed(false);
     setExpirationTime(null);
     setEmail("");
     setGender(null);
+    
+    // Refresh limits check (don't reset limits - they persist)
+    const limits = getLimits();
+    setGenerationLimits(limits);
+    const check = canGenerate(limits);
+    setLimitCheck(check);
+    setRetryUsed(limits.freeRetriesUsed >= 1);
+    
     onReset();
   };
 
@@ -341,6 +463,26 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
               </div>
             )}
 
+            {/* Generation Limit Display */}
+            {limitCheck && (
+              <div className="mb-4 p-3 rounded-xl text-center text-sm" style={{ 
+                backgroundColor: limitCheck.allowed ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                border: `1px solid ${limitCheck.allowed ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                color: limitCheck.allowed ? '#4ADE80' : '#F87171'
+              }}>
+                {limitCheck.allowed ? (
+                  <p>
+                    {generationLimits.purchases > 0 
+                      ? `✨ ${2 + (generationLimits.purchases * 5) - generationLimits.freeGenerations} generations remaining (${generationLimits.purchases} purchase${generationLimits.purchases > 1 ? 's' : ''} active)`
+                      : `✨ ${2 - generationLimits.freeGenerations} free generation${2 - generationLimits.freeGenerations !== 1 ? 's' : ''} remaining`
+                    }
+                  </p>
+                ) : (
+                  <p>{limitCheck.reason}</p>
+                )}
+              </div>
+            )}
+
             {/* Gender Selection */}
             <div className="mb-6">
               <p className="text-center mb-3 text-sm" style={{ color: '#B8B2A8' }}>
@@ -349,11 +491,12 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
               <div className="flex gap-4 justify-center">
                 <button
                   onClick={() => setGender("male")}
+                  disabled={limitCheck && !limitCheck.allowed}
                   className={`px-6 py-3 rounded-xl font-semibold transition-all ${
                     gender === "male"
                       ? "scale-105 shadow-lg"
                       : "opacity-70 hover:opacity-100"
-                  }`}
+                  } ${limitCheck && !limitCheck.allowed ? 'opacity-50 cursor-not-allowed' : ''}`}
                   style={{
                     backgroundColor: gender === "male" ? '#C5A572' : 'rgba(197, 165, 114, 0.2)',
                     color: gender === "male" ? '#1A1A1A' : '#C5A572',
@@ -364,11 +507,12 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
                 </button>
                 <button
                   onClick={() => setGender("female")}
+                  disabled={limitCheck && !limitCheck.allowed}
                   className={`px-6 py-3 rounded-xl font-semibold transition-all ${
                     gender === "female"
                       ? "scale-105 shadow-lg"
                       : "opacity-70 hover:opacity-100"
-                  }`}
+                  } ${limitCheck && !limitCheck.allowed ? 'opacity-50 cursor-not-allowed' : ''}`}
                   style={{
                     backgroundColor: gender === "female" ? '#C5A572' : 'rgba(197, 165, 114, 0.2)',
                     color: gender === "female" ? '#1A1A1A' : '#C5A572',
@@ -383,8 +527,8 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
             <div className="text-center">
               <button 
                 onClick={handleGenerate} 
-                disabled={!gender}
-                className={`btn-primary text-lg px-8 py-4 ${!gender ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!gender || (limitCheck && !limitCheck.allowed)}
+                className={`btn-primary text-lg px-8 py-4 ${!gender || (limitCheck && !limitCheck.allowed) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
@@ -539,19 +683,36 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
 
             {/* Retry button */}
             <div className="mt-6 pt-6 border-t" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-              {!retryUsed ? (
-                <button 
-                  onClick={handleRetry}
-                  className="w-full text-center text-sm py-2 transition-colors hover:text-[#C5A572]"
-                  style={{ color: '#7A756D' }}
-                >
-                  🔄 Try Again (1 free retry)
-                </button>
-              ) : (
-                <p className="text-center text-sm" style={{ color: '#7A756D' }}>
-                  You&apos;ve used your free retry
-                </p>
-              )}
+              {(() => {
+                const limits = getLimits();
+                const check = canGenerate(limits);
+                const hasFreeRetry = limits.freeRetriesUsed < 1;
+                const canRetry = check.allowed && hasFreeRetry;
+                
+                if (canRetry) {
+                  return (
+                    <button 
+                      onClick={handleRetry}
+                      className="w-full text-center text-sm py-2 transition-colors hover:text-[#C5A572]"
+                      style={{ color: '#7A756D' }}
+                    >
+                      🔄 Try Again (1 free retry)
+                    </button>
+                  );
+                } else if (!check.allowed) {
+                  return (
+                    <p className="text-center text-sm" style={{ color: '#7A756D' }}>
+                      {check.reason || "Generation limit reached. Purchase an image to unlock more!"}
+                    </p>
+                  );
+                } else {
+                  return (
+                    <p className="text-center text-sm" style={{ color: '#7A756D' }}>
+                      You&apos;ve used your free retry. Purchase an image to unlock more generations!
+                    </p>
+                  );
+                }
+              })()}
             </div>
           </div>
         )}
