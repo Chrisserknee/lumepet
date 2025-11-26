@@ -161,9 +161,37 @@ The description must be accurate enough that the owner instantly recognizes thei
 
     const petDescription = visionResponse.choices[0]?.message?.content || "a beloved pet";
 
+    // Log for debugging
+    console.log("Pet description from vision:", petDescription);
+
     // Extract species from the description (format: [DOG], [CAT], etc.)
     const speciesMatch = petDescription.match(/\[(DOG|CAT|RABBIT|BIRD|HAMSTER|GUINEA PIG|FERRET|HORSE|PET)\]/i);
-    const species = speciesMatch ? speciesMatch[1].toUpperCase() : "PET";
+    let species = speciesMatch ? speciesMatch[1].toUpperCase() : "";
+    
+    // Fallback: search for species keywords if bracket format wasn't found
+    if (!species) {
+      const lowerDesc = petDescription.toLowerCase();
+      if (lowerDesc.includes("dog") || lowerDesc.includes("puppy") || lowerDesc.includes("canine")) {
+        species = "DOG";
+      } else if (lowerDesc.includes("cat") || lowerDesc.includes("kitten") || lowerDesc.includes("feline")) {
+        species = "CAT";
+      } else if (lowerDesc.includes("rabbit") || lowerDesc.includes("bunny")) {
+        species = "RABBIT";
+      } else if (lowerDesc.includes("bird") || lowerDesc.includes("parrot") || lowerDesc.includes("parakeet")) {
+        species = "BIRD";
+      } else if (lowerDesc.includes("hamster") || lowerDesc.includes("guinea pig") || lowerDesc.includes("ferret")) {
+        species = "SMALL PET";
+      } else {
+        species = "PET";
+      }
+    }
+    
+    // Create negative species instruction
+    const notSpecies = species === "DOG" ? "DO NOT generate a cat or any feline." 
+                     : species === "CAT" ? "DO NOT generate a dog or any canine."
+                     : `DO NOT generate any animal other than a ${species}.`;
+    
+    console.log("Detected species:", species);
 
     // Randomize elements for unique paintings
     const cushions = [
@@ -200,21 +228,21 @@ The description must be accurate enough that the owner instantly recognizes thei
     ];
     
     const backgrounds = [
-      "warm sienna background with burgundy velvet drapes and marble column",
-      "rich umber backdrop with olive green curtains and gilded frame visible",
-      "deep brown study with leather-bound books and brass candlestick",
-      "warm ochre wall with tapestry glimpse and wooden paneling",
-      "muted amber background with wine-colored drapery and ornate mirror",
-      "soft brown interior with brocade curtains and antique vase",
-      "golden-brown library setting with globe and quill on desk",
-      "warm sepia backdrop with velvet curtains parted to show landscape"
+      "soft dove gray background with dusty blue velvet drapes and white marble column",
+      "light cream wall with sage green curtains and silver-framed mirror",
+      "pale stone gray interior with ivory silk drapes and classical sculpture",
+      "muted blue-gray backdrop with soft white curtains and porcelain vase",
+      "light taupe wall with cool gray drapery and antique books",
+      "soft silver-gray study with pale blue accents and crystal chandelier",
+      "creamy ivory background with muted teal curtains and gilded frame",
+      "cool neutral gray backdrop with blush pink drapery and marble bust"
     ];
     
     const lightingDirections = [
-      "from upper left, creating gentle shadows on the right",
-      "from the left side, with soft fill light from the right",
-      "from above and slightly left, with warm reflected light below",
-      "soft diffused light from a window on the left side"
+      "bright natural daylight from upper left, creating soft shadows",
+      "clean diffused light from the left, with gentle fill light",
+      "bright studio lighting from above and left, evenly illuminated",
+      "soft natural window light from the left, bright and airy"
     ];
 
     // Pick random elements
@@ -225,24 +253,28 @@ The description must be accurate enough that the owner instantly recognizes thei
     const lighting = lightingDirections[Math.floor(Math.random() * lightingDirections.length)];
 
     // Step 2: Generate Renaissance royal portrait with DALL-E
-    const generationPrompt = `IMPORTANT: Generate a portrait of a ${species}, NOT any other animal.
+    const generationPrompt = `!!!!! CRITICAL - THIS IS A ${species} !!!!!
+Generate a portrait of a ${species}. ${notSpecies}
 
-Create a classical oil painting portrait in the Dutch Golden Age style.
+===== SPECIES VERIFICATION =====
+Animal type: ${species}
+${notSpecies}
+The subject is a ${species}. Only generate a ${species}.
 
-===== THE SUBJECT (MUST MATCH EXACTLY) =====
+===== THE SUBJECT (${species}) =====
 ${petDescription}
 
-===== CRITICAL REQUIREMENTS =====
-1. SPECIES: This MUST be a ${species}. Do NOT generate any other type of animal.
+===== REQUIREMENTS =====
+1. SPECIES: This is a ${species}. Generate ONLY a ${species}. ${notSpecies}
 2. COLOR ACCURACY: 
    - If described as BLACK fur, paint it TRUE BLACK/JET BLACK (not gray, not dark brown)
    - If described as WHITE fur, paint it PURE WHITE
    - Match the EXACT colors described above
-3. The pet must be recognizable as the specific animal described
+3. The ${species} must be recognizable as the specific animal described
 
 ===== COMPOSITION (WIDE SHOT - PULL BACK) =====
-- Frame from a DISTANCE showing the pet's FULL BODY with generous space around
-- The pet should occupy only 40-50% of the frame height
+- Frame from a DISTANCE showing the ${species}'s FULL BODY with generous space around
+- The ${species} should occupy only 40-50% of the frame height
 - Show LOTS of background and environment around the subject
 - Include the complete cushion, visible floor, and architectural elements
 - The scene should feel like a full room portrait, not a close-up
@@ -253,17 +285,21 @@ ${petDescription}
 - JEWELRY: ${jewelryItem}
 - SETTING: ${background}
 
-===== LIGHTING (BRIGHT BUT CLASSICAL) =====
-- Warm golden light ${lighting}
-- Soft shadows, NOT overly dark or muddy
-- Rich but BRIGHT palette - pet's features clearly visible
-- Overall warm, inviting atmosphere
+===== LIGHTING & COLOR (BRIGHT, NEUTRAL, HIGH WHITE BALANCE) =====
+- ${lighting}
+- HIGH WHITE BALANCE - NO orange cast, NO sepia tones, NO yellowed colors
+- Clean, bright color palette with TRUE-TO-LIFE colors
+- Soft shadows, well-illuminated scene - the ${species}'s features clearly visible
+- Cool to neutral color temperature - like a professional photograph
+- AVOID: warm/orange tint, grungy look, muddy colors, aged appearance
 
 ===== ARTISTIC STYLE =====
 - Classical oil painting with visible brushstrokes and canvas texture
 - Museum-quality Dutch Golden Age portraiture style
-- Noble, dignified pose - seated regally on the cushion
-- Unique artistic interpretation - like a one-of-a-kind commissioned painting`;
+- Noble, dignified ${species} pose - seated regally on the cushion
+- Unique artistic interpretation - like a one-of-a-kind commissioned painting
+
+!!!!! FINAL CHECK: This portrait MUST show a ${species}. ${notSpecies} !!!!!`;
 
     const imageResponse = await openai.images.generate({
       model: "gpt-image-1",
