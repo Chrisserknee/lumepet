@@ -91,7 +91,7 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = new Image();
+        const img = document.createElement('img');
         img.onload = () => {
           const canvas = document.createElement('canvas');
           let width = img.width;
