@@ -174,10 +174,28 @@ Format your response as: "[SPECIES] UNIQUE FEATURES: [list the 3-5 most distinct
       max_tokens: 600,
     });
 
-    const petDescription = visionResponse.choices[0]?.message?.content || "a beloved pet";
+    let petDescription = visionResponse.choices[0]?.message?.content || "a beloved pet";
+
+    // Sanitize description to remove problematic characters that might fail Supabase pattern validation
+    // Keep most characters but remove emojis and problematic unicode
+    petDescription = petDescription
+      .replace(/[\u{1F300}-\u{1F9FF}]/gu, '') // Remove emojis
+      .replace(/[\u{2600}-\u{26FF}]/gu, '') // Remove misc symbols  
+      .replace(/[\u{2700}-\u{27BF}]/gu, '') // Remove dingbats
+      .replace(/[^\x20-\x7E\u00A0-\uFFFF]/g, '') // Keep printable ASCII + common unicode (but not control chars)
+      .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
+      .replace(/\n{3,}/g, '\n\n') // Limit consecutive newlines
+      .trim();
+
+    // Ensure we have a valid description (not empty after sanitization)
+    if (!petDescription || petDescription.length < 10) {
+      petDescription = "a beloved pet with distinctive features";
+      console.warn("Pet description was too short after sanitization, using fallback");
+    }
 
     // Log for debugging
-    console.log("Pet description from vision:", petDescription);
+    console.log("Pet description from vision (sanitized):", petDescription);
+    console.log("Description length:", petDescription.length);
 
     // Extract species from the description (format: [DOG], [CAT], etc.)
     const speciesMatch = petDescription.match(/\[(DOG|CAT|RABBIT|BIRD|HAMSTER|GUINEA PIG|FERRET|HORSE|PET)\]/i);
@@ -360,6 +378,14 @@ The ${species} wears ${robe}, sits on ${cushion}, adorned with ${jewelryItem}. $
       : petDescription;
     
     try {
+      // Validate each field individually to identify which one fails
+      console.log("Saving metadata with:", {
+        imageId,
+        descriptionLength: truncatedDescription.length,
+        hdUrl: hdUrl.substring(0, 50) + "...",
+        previewUrl: previewUrl.substring(0, 50) + "...",
+      });
+      
       await saveMetadata(imageId, {
         created_at: new Date().toISOString(),
         paid: false,
@@ -367,12 +393,21 @@ The ${species} wears ${robe}, sits on ${cushion}, adorned with ${jewelryItem}. $
         hd_url: hdUrl,
         preview_url: previewUrl,
       });
+      console.log("Metadata saved successfully");
     } catch (metadataError) {
       console.error("Metadata save error:", metadataError);
       const errorMsg = metadataError instanceof Error ? metadataError.message : String(metadataError);
       console.error("Full error:", errorMsg);
-      // Continue anyway - the images are uploaded, just metadata failed
-      // This allows the user to still get their image, but log the error for debugging
+      console.error("Error details:", JSON.stringify(metadataError, null, 2));
+      
+      // If it's a pattern validation error, try to identify the problematic field
+      if (errorMsg.includes("pattern") || errorMsg.includes("String did not match")) {
+        // Re-throw with more context
+        throw new Error(`Database validation error: ${errorMsg}. This may be caused by special characters in the pet description.`);
+      }
+      
+      // For other errors, continue anyway - images are uploaded
+      console.warn("Continuing despite metadata save error - images are available");
     }
 
     // Return watermarked preview - HD version only available after purchase
