@@ -1,0 +1,5 @@
+# This directory stores generated pet portraits
+# HD images (never shown before purchase): {id}-hd.png
+# Watermarked previews: {id}-preview.png
+# Metadata: {id}.json
+
