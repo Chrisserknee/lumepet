@@ -382,35 +382,55 @@ AESTHETIC DETAILS:
 
     // Generate image with Replicate (SDXL)
     console.log("Generating image with Replicate SDXL...");
+    console.log("Prompt length:", generationPrompt.length);
     
-    const output = await replicate.run(
-      "stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
-      {
-        input: {
-          prompt: generationPrompt,
-          negative_prompt: "ugly, blurry, low quality, distorted, deformed, disfigured, bad anatomy, wrong species, cartoon, anime, 3d render, photograph, photo",
-          width: 1024,
-          height: 1024,
-          num_outputs: 1,
-          scheduler: "K_EULER",
-          num_inference_steps: 50,
-          guidance_scale: 7.5,
-          refine: "expert_ensemble_refiner",
-          high_noise_frac: 0.8,
+    // Truncate prompt if too long (SDXL has limits)
+    const maxPromptLength = 2000;
+    const truncatedPrompt = generationPrompt.length > maxPromptLength 
+      ? generationPrompt.substring(0, maxPromptLength) 
+      : generationPrompt;
+    
+    let output;
+    try {
+      output = await replicate.run(
+        "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+        {
+          input: {
+            prompt: truncatedPrompt,
+            negative_prompt: "ugly, blurry, low quality, distorted, deformed, disfigured, bad anatomy, wrong species, cartoon, anime, 3d render",
+            width: 1024,
+            height: 1024,
+            num_outputs: 1,
+            scheduler: "K_EULER",
+            num_inference_steps: 30,
+            guidance_scale: 7.5,
+          }
         }
-      }
-    );
+      );
+    } catch (replicateError) {
+      console.error("Replicate error:", replicateError);
+      throw new Error(`Replicate API error: ${replicateError instanceof Error ? replicateError.message : 'Unknown error'}`);
+    }
+
+    console.log("Replicate output:", output);
 
     // Replicate returns an array of URLs
     const outputArray = output as string[];
     const imageUrl = outputArray?.[0];
 
     if (!imageUrl) {
-      throw new Error("No image generated");
+      console.error("No image URL in output:", output);
+      throw new Error("No image generated from Replicate");
     }
 
     // Download the generated image
+    console.log("Downloading image from:", imageUrl);
     const downloadResponse = await fetch(imageUrl);
+    
+    if (!downloadResponse.ok) {
+      throw new Error(`Failed to download image: ${downloadResponse.status}`);
+    }
+    
     const arrayBuffer = await downloadResponse.arrayBuffer();
     const generatedBuffer = Buffer.from(arrayBuffer);
 
