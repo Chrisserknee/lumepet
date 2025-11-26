@@ -41,14 +41,21 @@ export default function Hero({ onUploadClick }: HeroProps) {
         {/* LumePet Logo */}
         <div className="mb-6 animate-fade-in-up">
           <div className="flex justify-center">
-            <Image
-              src="/samples/lumepet.png"
-              alt="LumePet Logo"
-              width={120}
-              height={120}
-              className="object-contain animate-float"
-              priority
-            />
+            <div 
+              className="relative"
+              style={{
+                animation: 'pulse-glow 3s ease-in-out infinite'
+              }}
+            >
+              <Image
+                src="/samples/lumepet.png"
+                alt="LumePet Logo"
+                width={120}
+                height={120}
+                className="object-contain animate-float"
+                priority
+              />
+            </div>
           </div>
         </div>
 

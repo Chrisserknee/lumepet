@@ -12,13 +12,19 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo/Brand */}
           <div className="flex items-center gap-3">
-            <Image
-              src="/samples/lumepet.png"
-              alt="LumePet Logo"
-              width={40}
-              height={40}
-              className="object-contain"
-            />
+            <div
+              style={{
+                filter: 'drop-shadow(0 0 10px rgba(197, 165, 114, 0.6)) drop-shadow(0 0 20px rgba(197, 165, 114, 0.4)) drop-shadow(0 0 30px rgba(197, 165, 114, 0.2))'
+              }}
+            >
+              <Image
+                src="/samples/lumepet.png"
+                alt="LumePet Logo"
+                width={40}
+                height={40}
+                className="object-contain"
+              />
+            </div>
             <span 
               className="text-xl font-semibold"
               style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: '#F0EDE8' }}
