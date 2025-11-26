@@ -5,41 +5,59 @@ import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-// Grant purchase bonus generations
-const grantPurchaseBonus = () => {
+// Grant purchase bonus generations or pack credits
+const grantPurchaseBonus = (type?: string, packType?: string) => {
   if (typeof window === "undefined") return;
   
   const STORAGE_KEY = "lumepet_generation_limits";
   const stored = localStorage.getItem(STORAGE_KEY);
   
-  let limits: { freeGenerations: number; freeRetriesUsed: number; purchases: number };
+  let limits: { 
+    freeGenerations: number; 
+    freeRetriesUsed: number; 
+    purchases: number;
+    packPurchases?: number;
+    packCredits?: number;
+  };
   
   if (stored) {
     try {
       limits = JSON.parse(stored);
+      // Ensure new fields exist
+      limits.packPurchases = limits.packPurchases || 0;
+      limits.packCredits = limits.packCredits || 0;
     } catch {
-      limits = { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0 };
+      limits = { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0, packPurchases: 0, packCredits: 0 };
     }
   } else {
-    limits = { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0 };
+    limits = { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0, packPurchases: 0, packCredits: 0 };
   }
   
   // Only increment if this purchase hasn't been counted yet
   // Check sessionStorage to prevent double-counting on page refresh
-  const lastPurchase = sessionStorage.getItem("last_purchase_time");
+  const sessionKey = type === "pack" ? "last_pack_purchase_time" : "last_purchase_time";
+  const lastPurchase = sessionStorage.getItem(sessionKey);
   const now = Date.now();
   
   // Only grant bonus if it's been more than 5 seconds since last grant (prevents refresh abuse)
   if (!lastPurchase || (now - parseInt(lastPurchase)) > 5000) {
-    limits.purchases += 1;
+    if (type === "pack" && packType === "2-pack") {
+      limits.packPurchases = (limits.packPurchases || 0) + 1;
+      limits.packCredits = (limits.packCredits || 0) + 2; // 2-pack gives 2 credits
+      sessionStorage.setItem("last_pack_purchase_time", now.toString());
+    } else {
+      limits.purchases += 1;
+      sessionStorage.setItem("last_purchase_time", now.toString());
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(limits));
-    sessionStorage.setItem("last_purchase_time", now.toString());
   }
 };
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const imageId = searchParams.get("imageId");
+  const type = searchParams.get("type");
+  const packType = searchParams.get("packType");
   
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isValid, setIsValid] = useState<boolean | null>(null);
@@ -47,8 +65,8 @@ function SuccessContent() {
   
   // Grant purchase bonus when page loads (after successful payment)
   useEffect(() => {
-    grantPurchaseBonus();
-  }, []);
+    grantPurchaseBonus(type || undefined, packType || undefined);
+  }, [type, packType]);
 
   useEffect(() => {
     if (imageId) {
@@ -155,7 +173,40 @@ function SuccessContent() {
     );
   }
 
-  // Success state
+  // Pack purchase success (no image to show)
+  if (type === "pack") {
+    return (
+      <div className="min-h-screen bg-renaissance py-12 px-6">
+        <div className="max-w-2xl mx-auto">
+          {/* Success header */}
+          <div className="text-center mb-10 animate-fade-in-up">
+            <div 
+              className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)' }}
+            >
+              <svg className="w-10 h-10" style={{ color: '#4ADE80' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h1 
+              className="text-3xl sm:text-4xl md:text-5xl font-semibold mb-4"
+              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: '#F0EDE8' }}
+            >
+              Pack Purchased Successfully!
+            </h1>
+            <p className="text-lg mb-6" style={{ color: '#B8B2A8' }}>
+              You now have 2 un-watermarked generations available. Start creating your masterpieces!
+            </p>
+            <Link href="/" className="btn-primary inline-flex">
+              Start Creating
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Success state (individual image purchase)
   return (
     <div className="min-h-screen bg-renaissance py-12 px-6">
       <div className="max-w-2xl mx-auto">

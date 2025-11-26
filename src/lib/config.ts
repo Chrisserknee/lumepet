@@ -4,9 +4,17 @@ export const CONFIG = {
   PRICE_DISPLAY: "$0.50",
   PRICE_AMOUNT: parseInt(process.env.PRICE_AMOUNT || "50", 10), // in cents (50¢ for testing)
   
+  // Pack pricing
+  PACK_2_PRICE_DISPLAY: "$15",
+  PACK_2_PRICE_AMOUNT: 1500, // $15 in cents
+  PACK_2_GENERATIONS: 2, // 2 generations per pack
+  
   // Product details
   PRODUCT_NAME: "LumePet Royal Portrait",
   PRODUCT_DESCRIPTION: "Full-resolution, watermark-free royal Renaissance portrait of your beloved pet as nobility",
+  
+  PACK_PRODUCT_NAME: "LumePet Generation Pack (2)",
+  PACK_PRODUCT_DESCRIPTION: "2 un-watermarked generations - Create beautiful portraits without watermarks",
   
   // API URLs
   BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",

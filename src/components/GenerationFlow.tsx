@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { CONFIG } from "@/lib/config";
 
 type Stage = "preview" | "generating" | "result" | "checkout" | "email" | "expired";
 type Gender = "male" | "female" | null;
@@ -34,23 +35,34 @@ const STORAGE_KEY = "lumepet_generation_limits";
 interface GenerationLimits {
   freeGenerations: number; // Total free generations used (starts at 0)
   freeRetriesUsed: number; // Free retries used (max 1)
-  purchases: number; // Number of purchases made
+  purchases: number; // Number of individual image purchases made
+  packPurchases: number; // Number of pack purchases made
+  packCredits: number; // Remaining pack generation credits (un-watermarked)
   lastReset?: string; // Date of last reset (optional for daily limits)
 }
 
 const getLimits = (): GenerationLimits => {
   if (typeof window === "undefined") {
-    return { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0 };
+    return { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0, packPurchases: 0, packCredits: 0 };
   }
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Ensure new fields exist for backward compatibility
+      return {
+        freeGenerations: parsed.freeGenerations || 0,
+        freeRetriesUsed: parsed.freeRetriesUsed || 0,
+        purchases: parsed.purchases || 0,
+        packPurchases: parsed.packPurchases || 0,
+        packCredits: parsed.packCredits || 0,
+        lastReset: parsed.lastReset,
+      };
     } catch {
-      return { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0 };
+      return { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0, packPurchases: 0, packCredits: 0 };
     }
   }
-  return { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0 };
+  return { freeGenerations: 0, freeRetriesUsed: 0, purchases: 0, packPurchases: 0, packCredits: 0 };
 };
 
 const saveLimits = (limits: GenerationLimits) => {
@@ -59,7 +71,7 @@ const saveLimits = (limits: GenerationLimits) => {
   }
 };
 
-const canGenerate = (limits: GenerationLimits): { allowed: boolean; reason?: string } => {
+const canGenerate = (limits: GenerationLimits): { allowed: boolean; reason?: string; hasPackCredits?: boolean } => {
   // Free tier: 1 initial generation + 1 free retry = 2 total free
   const freeLimit = 2;
   const freeUsed = limits.freeGenerations;
@@ -69,14 +81,20 @@ const canGenerate = (limits: GenerationLimits): { allowed: boolean; reason?: str
   const totalAllowed = freeLimit + purchaseBonus;
   const totalUsed = freeUsed;
   
+  // Check if user has pack credits (un-watermarked generations)
+  if (limits.packCredits > 0) {
+    return { allowed: true, hasPackCredits: true };
+  }
+  
   if (totalUsed >= totalAllowed) {
     return {
       allowed: false,
-      reason: `You've reached your generation limit. ${limits.purchases > 0 ? `You have ${limits.purchases} purchase(s) granting ${purchaseBonus} extra generations.` : "Purchase an image to unlock more generations!"}`,
+      reason: `You've reached your free generation limit (${freeLimit} free generations). Purchase a pack to unlock more un-watermarked generations!`,
+      hasPackCredits: false,
     };
   }
   
-  return { allowed: true };
+  return { allowed: true, hasPackCredits: false };
 };
 
 const incrementGeneration = (isRetry: boolean = false) => {
@@ -93,6 +111,23 @@ const addPurchase = () => {
   const limits = getLimits();
   limits.purchases += 1;
   saveLimits(limits);
+  return limits;
+};
+
+const addPackPurchase = (credits: number) => {
+  const limits = getLimits();
+  limits.packPurchases += 1;
+  limits.packCredits += credits;
+  saveLimits(limits);
+  return limits;
+};
+
+const usePackCredit = () => {
+  const limits = getLimits();
+  if (limits.packCredits > 0) {
+    limits.packCredits -= 1;
+    saveLimits(limits);
+  }
   return limits;
 };
 
@@ -249,6 +284,12 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
       if (gender) {
         formData.append("gender", gender);
       }
+      
+      // Check if user has pack credits (un-watermarked generation)
+      const limits = getLimits();
+      if (limits.packCredits > 0) {
+        formData.append("usePackCredit", "true");
+      }
 
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -275,10 +316,18 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
 
       setResult(data);
       
-      // Increment generation count (mark as retry if applicable)
-      const updatedLimits = incrementGeneration(isRetry);
-      setGenerationLimits(updatedLimits);
-      const newCheck = canGenerate(updatedLimits);
+      // Handle pack credit usage or increment generation count
+      const currentLimits = getLimits();
+      if (currentLimits.packCredits > 0) {
+        // Use pack credit (un-watermarked)
+        const updatedLimits = usePackCredit();
+        setGenerationLimits(updatedLimits);
+      } else {
+        // Increment generation count (mark as retry if applicable)
+        const updatedLimits = incrementGeneration(isRetry);
+        setGenerationLimits(updatedLimits);
+      }
+      const newCheck = canGenerate(getLimits());
       setLimitCheck(newCheck);
       
       // Set 15-minute expiration timer
@@ -340,12 +389,20 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
     setStage("checkout");
 
     try {
+      // Check if this is a pack purchase
+      const isPackPurchase = result.imageId === "pack";
+      
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ imageId: result.imageId, email }),
+        body: JSON.stringify({ 
+          imageId: isPackPurchase ? null : result.imageId, 
+          email,
+          type: isPackPurchase ? "pack" : "image",
+          packType: isPackPurchase ? "2-pack" : undefined,
+        }),
       });
 
       const data = await response.json();
@@ -463,8 +520,8 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
               </div>
             )}
 
-            {/* Generation Limit Display - Only show after first generation */}
-            {limitCheck && generationLimits.freeGenerations > 0 && (
+            {/* Generation Limit Display */}
+            {limitCheck && (
               <div className="mb-4 p-3 rounded-xl text-center text-sm" style={{ 
                 backgroundColor: limitCheck.allowed ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                 border: `1px solid ${limitCheck.allowed ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
@@ -472,13 +529,37 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
               }}>
                 {limitCheck.allowed ? (
                   <p>
-                    {generationLimits.purchases > 0 
-                      ? `✨ ${2 + (generationLimits.purchases * 5) - generationLimits.freeGenerations} generations remaining (${generationLimits.purchases} purchase${generationLimits.purchases > 1 ? 's' : ''} active)`
-                      : `✨ ${2 - generationLimits.freeGenerations} free generation${2 - generationLimits.freeGenerations !== 1 ? 's' : ''} remaining`
-                    }
+                    {generationLimits.packCredits > 0 ? (
+                      `✨ ${generationLimits.packCredits} un-watermarked generation${generationLimits.packCredits !== 1 ? 's' : ''} remaining`
+                    ) : generationLimits.purchases > 0 ? (
+                      `✨ ${2 + (generationLimits.purchases * 5) - generationLimits.freeGenerations} generations remaining (${generationLimits.purchases} purchase${generationLimits.purchases > 1 ? 's' : ''} active)`
+                    ) : (
+                      `✨ ${2 - generationLimits.freeGenerations} free generation${2 - generationLimits.freeGenerations !== 1 ? 's' : ''} remaining`
+                    )}
                   </p>
                 ) : (
-                  <p>{limitCheck.reason}</p>
+                  <div>
+                    <p className="mb-3">{limitCheck.reason}</p>
+                    {/* Pack Purchase Option */}
+                    <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: 'rgba(197, 165, 114, 0.1)', border: '1px solid rgba(197, 165, 114, 0.3)' }}>
+                      <p className="text-sm font-semibold mb-2" style={{ color: '#C5A572' }}>Unlock More Generations</p>
+                      <p className="text-xs mb-3" style={{ color: '#B8B2A8' }}>Purchase a pack to get un-watermarked generations</p>
+                      <button
+                        onClick={() => {
+                          setStage("email");
+                          setEmailError(null);
+                          setResult({ imageId: "pack", previewUrl: "" } as GeneratedResult);
+                        }}
+                        className="w-full py-2 px-4 rounded-lg font-semibold text-sm transition-all hover:scale-105"
+                        style={{ 
+                          backgroundColor: '#C5A572', 
+                          color: '#1A1A1A',
+                        }}
+                      >
+                        Buy 2-Pack ($15) - Un-watermarked
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -701,15 +782,47 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
                   );
                 } else if (!check.allowed) {
                   return (
-                    <p className="text-center text-sm" style={{ color: '#7A756D' }}>
-                      {check.reason || "Generation limit reached. Purchase an image to unlock more!"}
-                    </p>
+                    <div className="text-center">
+                      <p className="text-sm mb-3" style={{ color: '#7A756D' }}>
+                        {check.reason || "Generation limit reached. Purchase a pack to unlock more!"}
+                      </p>
+                      <button
+                        onClick={() => {
+                          setStage("email");
+                          setEmailError(null);
+                          setResult({ imageId: "pack", previewUrl: "" } as GeneratedResult);
+                        }}
+                        className="w-full py-2 px-4 rounded-lg font-semibold text-sm transition-all hover:scale-105"
+                        style={{ 
+                          backgroundColor: '#C5A572', 
+                          color: '#1A1A1A',
+                        }}
+                      >
+                        Buy 2-Pack ($15) - Un-watermarked
+                      </button>
+                    </div>
                   );
                 } else {
                   return (
-                    <p className="text-center text-sm" style={{ color: '#7A756D' }}>
-                      You&apos;ve used your free retry. Purchase an image to unlock more generations!
-                    </p>
+                    <div className="text-center">
+                      <p className="text-sm mb-3" style={{ color: '#7A756D' }}>
+                        You&apos;ve used your free retry. Purchase a pack to unlock more generations!
+                      </p>
+                      <button
+                        onClick={() => {
+                          setStage("email");
+                          setEmailError(null);
+                          setResult({ imageId: "pack", previewUrl: "" } as GeneratedResult);
+                        }}
+                        className="w-full py-2 px-4 rounded-lg font-semibold text-sm transition-all hover:scale-105"
+                        style={{ 
+                          backgroundColor: '#C5A572', 
+                          color: '#1A1A1A',
+                        }}
+                      >
+                        Buy 2-Pack ($15) - Un-watermarked
+                      </button>
+                    </div>
                   );
                 }
               })()}

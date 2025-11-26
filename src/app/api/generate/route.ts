@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const imageFile = formData.get("image") as File | null;
     const gender = formData.get("gender") as string | null;
+    const usePackCredit = formData.get("usePackCredit") === "true";
 
     if (!imageFile) {
       return NextResponse.json(
@@ -358,19 +359,28 @@ The ${species} wears ${robe}, sits on ${cushion}, adorned with ${jewelryItem}. $
       throw new Error("No image data in response");
     }
 
-    // Create watermarked preview
-    const watermarkedBuffer = await createWatermarkedImage(generatedBuffer);
+    // Create preview (watermarked if not using pack credit, un-watermarked if using pack credit)
+    let previewBuffer: Buffer;
+    if (usePackCredit) {
+      // Un-watermarked preview for pack credits
+      previewBuffer = generatedBuffer;
+      console.log("Using pack credit - generating un-watermarked image");
+    } else {
+      // Watermarked preview for free generations
+      previewBuffer = await createWatermarkedImage(generatedBuffer);
+      console.log("Free generation - creating watermarked preview");
+    }
 
-    // Upload HD image to Supabase Storage
+    // Upload HD image to Supabase Storage (always un-watermarked)
     const hdUrl = await uploadImage(
       generatedBuffer,
       `${imageId}-hd.png`,
       "image/png"
     );
 
-    // Upload watermarked preview to Supabase Storage
+    // Upload preview to Supabase Storage
     const previewUrl = await uploadImage(
-      watermarkedBuffer,
+      previewBuffer,
       `${imageId}-preview.png`,
       "image/png"
     );
@@ -418,10 +428,11 @@ The ${species} wears ${robe}, sits on ${cushion}, adorned with ${jewelryItem}. $
       
       await saveMetadata(imageId, {
         created_at: new Date().toISOString(),
-        paid: false,
+        paid: usePackCredit, // Mark as paid if using pack credit
         pet_description: finalDescription,
         hd_url: hdUrl,
         preview_url: previewUrl,
+        ...(usePackCredit ? { pack_generation: true } : {}),
       });
       console.log("Metadata saved successfully");
     } catch (metadataError) {

@@ -18,14 +18,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { imageId, email } = body;
-
-    if (!imageId) {
-      return NextResponse.json(
-        { error: "Image ID is required" },
-        { status: 400 }
-      );
-    }
+    const { imageId, email, type, packType } = body;
 
     if (!email) {
       return NextResponse.json(
@@ -34,22 +27,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify the image exists in Supabase
-    const metadata = await getMetadata(imageId);
+    // Check if this is a pack purchase
+    const isPackPurchase = type === "pack";
     
-    if (!metadata) {
+    if (!isPackPurchase && !imageId) {
       return NextResponse.json(
-        { error: "Portrait not found. Please generate a new one." },
-        { status: 404 }
+        { error: "Image ID is required" },
+        { status: 400 }
       );
     }
 
-    // Save email to emails table for marketing
-    await saveEmail(email, imageId, "checkout");
+    let metadata = null;
+    let priceAmount = 50; // Default to 50 cents for individual image
+    let productName = CONFIG.PRODUCT_NAME;
+    let productDescription = CONFIG.PRODUCT_DESCRIPTION;
+    let productImage: string[] = [];
 
-    // Use 50 cents for testing (override env var if needed)
-    const priceAmount = 50; // 50 cents for testing
-    console.log(`Creating checkout session with price: ${priceAmount} cents ($${(priceAmount / 100).toFixed(2)})`);
+    if (isPackPurchase) {
+      // Pack purchase
+      if (packType === "2-pack") {
+        priceAmount = CONFIG.PACK_2_PRICE_AMOUNT;
+        productName = CONFIG.PACK_PRODUCT_NAME;
+        productDescription = CONFIG.PACK_PRODUCT_DESCRIPTION;
+      }
+      console.log(`Creating pack checkout session: ${packType}, price: ${priceAmount} cents ($${(priceAmount / 100).toFixed(2)})`);
+    } else {
+      // Individual image purchase
+      // Verify the image exists in Supabase
+      metadata = await getMetadata(imageId);
+      
+      if (!metadata) {
+        return NextResponse.json(
+          { error: "Portrait not found. Please generate a new one." },
+          { status: 404 }
+        );
+      }
+      
+      productImage = [metadata.preview_url];
+      console.log(`Creating checkout session with price: ${priceAmount} cents ($${(priceAmount / 100).toFixed(2)})`);
+    }
+
+    // Save email to emails table for marketing
+    await saveEmail(email, imageId || null, isPackPurchase ? "pack-checkout" : "checkout");
 
     // Get the base URL from the request (works for both localhost and production)
     // Stripe requires absolute URLs, so we need to ensure we have a valid URL
@@ -119,9 +138,9 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: "usd",
             product_data: {
-              name: CONFIG.PRODUCT_NAME,
-              description: CONFIG.PRODUCT_DESCRIPTION,
-              images: [metadata.preview_url],
+              name: productName,
+              description: productDescription,
+              images: productImage,
             },
             unit_amount: priceAmount,
           },
@@ -129,11 +148,14 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: successUrl,
+      success_url: isPackPurchase 
+        ? `${baseUrl}/success?type=pack&packType=${packType}&session_id={CHECKOUT_SESSION_ID}`
+        : successUrl,
       cancel_url: baseUrl,
       metadata: {
-        imageId,
+        ...(imageId ? { imageId } : {}),
         customerEmail: email,
+        ...(isPackPurchase ? { type: "pack", packType } : {}),
       },
     });
 
