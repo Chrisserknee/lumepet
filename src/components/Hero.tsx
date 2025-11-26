@@ -35,11 +35,11 @@ export default function Hero({ onUploadClick }: HeroProps) {
         style={{ borderColor: 'rgba(197, 165, 114, 0.3)' }} 
       />
 
-      <div className="max-w-3xl mx-auto text-center relative z-10">
+      <div className="max-w-4xl mx-auto text-center relative z-10">
         {/* Crown icon */}
-        <div className="mb-8 animate-fade-in-up">
+        <div className="mb-6 animate-fade-in-up">
           <svg 
-            className="w-16 h-16 mx-auto animate-float" 
+            className="w-12 h-12 mx-auto animate-float" 
             style={{ color: '#C5A572' }}
             viewBox="0 0 24 24" 
             fill="currentColor"
@@ -47,6 +47,14 @@ export default function Hero({ onUploadClick }: HeroProps) {
             <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
           </svg>
         </div>
+
+        {/* Tagline */}
+        <p 
+          className="text-lg sm:text-xl mb-4 animate-fade-in-up tracking-wide"
+          style={{ color: '#C5A572', fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+        >
+          Your Cherished Pet in a Classic Masterpiece
+        </p>
 
         {/* Main headline */}
         <h1 
@@ -70,15 +78,45 @@ export default function Hero({ onUploadClick }: HeroProps) {
 
         {/* Subheadline */}
         <p 
-          className="text-lg sm:text-xl mb-10 animate-fade-in-up delay-200 max-w-xl mx-auto"
+          className="text-lg sm:text-xl mb-8 animate-fade-in-up delay-200 max-w-xl mx-auto"
           style={{ color: '#4A4A4A' }}
         >
           Upload a photo. We&apos;ll paint them like a royal oil portrait — 
           worthy of hanging in the finest galleries of Europe.
         </p>
 
+        {/* Sample portraits */}
+        <div className="flex justify-center gap-4 sm:gap-6 mb-10 animate-fade-in-up delay-300">
+          <div 
+            className="w-28 h-36 sm:w-36 sm:h-48 rounded-lg overflow-hidden shadow-xl transform -rotate-3 hover:rotate-0 transition-transform duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, #C5A572 0%, #A68B5B 100%)',
+              padding: '4px'
+            }}
+          >
+            <img 
+              src="/samples/chihuahua.jpg" 
+              alt="Renaissance Chihuahua portrait"
+              className="w-full h-full object-cover rounded"
+            />
+          </div>
+          <div 
+            className="w-28 h-36 sm:w-36 sm:h-48 rounded-lg overflow-hidden shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, #C5A572 0%, #A68B5B 100%)',
+              padding: '4px'
+            }}
+          >
+            <img 
+              src="/samples/blackcat.jpg" 
+              alt="Renaissance Black Cat portrait"
+              className="w-full h-full object-cover rounded"
+            />
+          </div>
+        </div>
+
         {/* CTA Button */}
-        <div className="animate-fade-in-up delay-300">
+        <div className="animate-fade-in-up delay-400">
           <button
             onClick={onUploadClick}
             className="btn-primary text-lg px-8 py-4 group"
@@ -89,7 +127,6 @@ export default function Hero({ onUploadClick }: HeroProps) {
             Upload your pet photo
           </button>
         </div>
-
       </div>
 
       {/* Scroll indicator */}
