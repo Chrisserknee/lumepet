@@ -45,7 +45,11 @@ async function createWatermarkedImage(inputBuffer: Buffer): Promise<Buffer> {
 }
 
 export async function POST(request: NextRequest) {
+  const userAgent = request.headers.get("user-agent") || "unknown";
+  const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
   console.log("=== Generate API called ===");
+  console.log("User agent:", userAgent);
+  console.log("Is mobile:", isMobile);
   
   try {
     // Check for API keys
@@ -370,6 +374,12 @@ The ${species} wears ${robe}, sits on ${cushion}, adorned with ${jewelryItem}. $
       throw new Error("Failed to generate valid image URLs");
     }
 
+    // Validate imageId is a valid UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(imageId)) {
+      throw new Error(`Invalid imageId format: ${imageId}`);
+    }
+
     // Save metadata to Supabase database
     // Truncate pet_description if too long (some databases have length limits)
     const maxDescriptionLength = 2000; // Safe limit
@@ -377,19 +387,29 @@ The ${species} wears ${robe}, sits on ${cushion}, adorned with ${jewelryItem}. $
       ? petDescription.substring(0, maxDescriptionLength) 
       : petDescription;
     
+    // Additional sanitization: remove any remaining problematic characters
+    const finalDescription = truncatedDescription
+      .replace(/[^\x20-\x7E\u00A0-\u024F\u1E00-\u1EFF]/g, '') // Keep Latin characters and common punctuation
+      .replace(/['"]/g, "'") // Normalize quotes
+      .trim();
+    
     try {
       // Validate each field individually to identify which one fails
       console.log("Saving metadata with:", {
         imageId,
-        descriptionLength: truncatedDescription.length,
+        imageIdValid: uuidRegex.test(imageId),
+        descriptionLength: finalDescription.length,
+        hdUrlLength: hdUrl.length,
+        previewUrlLength: previewUrl.length,
         hdUrl: hdUrl.substring(0, 50) + "...",
         previewUrl: previewUrl.substring(0, 50) + "...",
+        descriptionPreview: finalDescription.substring(0, 100),
       });
       
       await saveMetadata(imageId, {
         created_at: new Date().toISOString(),
         paid: false,
-        pet_description: truncatedDescription,
+        pet_description: finalDescription,
         hd_url: hdUrl,
         preview_url: previewUrl,
       });
@@ -400,14 +420,13 @@ The ${species} wears ${robe}, sits on ${cushion}, adorned with ${jewelryItem}. $
       console.error("Full error:", errorMsg);
       console.error("Error details:", JSON.stringify(metadataError, null, 2));
       
-      // If it's a pattern validation error, try to identify the problematic field
-      if (errorMsg.includes("pattern") || errorMsg.includes("String did not match")) {
-        // Re-throw with more context
-        throw new Error(`Database validation error: ${errorMsg}. This may be caused by special characters in the pet description.`);
+      // Always throw pattern validation errors - don't silently continue
+      if (errorMsg.includes("pattern") || errorMsg.includes("String did not match") || errorMsg.includes("validation")) {
+        throw new Error(`Database validation failed. Please try with a different image or contact support if the issue persists. Error: ${errorMsg}`);
       }
       
-      // For other errors, continue anyway - images are uploaded
-      console.warn("Continuing despite metadata save error - images are available");
+      // For other errors, throw as well so user knows something went wrong
+      throw new Error(`Failed to save portrait metadata: ${errorMsg}`);
     }
 
     // Return watermarked preview - HD version only available after purchase

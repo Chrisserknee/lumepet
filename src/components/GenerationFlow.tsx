@@ -106,7 +106,14 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to generate portrait");
+        // Log detailed error for debugging
+        console.error("Generation API error:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: data.error,
+          fullData: data,
+        });
+        throw new Error(data.error || `Failed to generate portrait (${response.status})`);
       }
 
       setResult(data);

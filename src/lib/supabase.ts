@@ -55,10 +55,19 @@ export async function saveMetadata(imageId: string, metadata: Record<string, unk
 
   if (error) {
     console.error("Failed to save metadata:", error);
-    console.error("Error details:", JSON.stringify(error, null, 2));
+    console.error("Error code:", error.code);
+    console.error("Error message:", error.message);
+    console.error("Error details:", error.details);
+    console.error("Error hint:", error.hint);
+    console.error("Full error:", JSON.stringify(error, null, 2));
     console.error("ImageId:", imageId);
-    console.error("Metadata:", JSON.stringify(metadata, null, 2));
-    throw new Error(`Failed to save metadata: ${error.message || JSON.stringify(error)}`);
+    console.error("Metadata keys:", Object.keys(metadata));
+    console.error("pet_description length:", (metadata.pet_description as string)?.length);
+    console.error("pet_description preview:", (metadata.pet_description as string)?.substring(0, 100));
+    
+    // Extract the most useful error message
+    const errorMessage = error.message || error.details || error.hint || JSON.stringify(error);
+    throw new Error(`Failed to save metadata: ${errorMessage}`);
   }
 }
 
