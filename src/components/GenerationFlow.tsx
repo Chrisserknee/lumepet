@@ -146,11 +146,16 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
   const [gender, setGender] = useState<Gender>(null);
   const [generationLimits, setGenerationLimits] = useState<GenerationLimits>(getLimits());
   const [limitCheck, setLimitCheck] = useState<{ allowed: boolean; reason?: string } | null>(null);
+  const [secretClickCount, setSecretClickCount] = useState(0);
+  const [secretActivated, setSecretActivated] = useState(false);
 
   // Set preview URL when file is provided
   useEffect(() => {
     if (file && !previewUrl) {
       setPreviewUrl(URL.createObjectURL(file));
+      // Reset secret click counter for new file
+      setSecretClickCount(0);
+      setSecretActivated(false);
     }
   }, [file, previewUrl]);
 
@@ -486,8 +491,27 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
             </div>
 
             <div 
-              className="relative aspect-square max-w-sm mx-auto rounded-2xl overflow-hidden shadow-lg mb-6"
+              className="relative aspect-square max-w-sm mx-auto rounded-2xl overflow-hidden shadow-lg mb-6 cursor-pointer"
               style={{ border: '2px solid rgba(197, 165, 114, 0.3)' }}
+              onClick={() => {
+                if (secretActivated) return; // Already activated
+                const newCount = secretClickCount + 1;
+                setSecretClickCount(newCount);
+                
+                if (newCount >= 6) {
+                  // Grant extra free generation
+                  const limits = getLimits();
+                  limits.freeGenerations = Math.max(0, limits.freeGenerations - 1); // Reduce used count by 1
+                  saveLimits(limits);
+                  setGenerationLimits(limits);
+                  const newCheck = canGenerate(limits);
+                  setLimitCheck(newCheck);
+                  setSecretActivated(true);
+                  
+                  // Show subtle feedback
+                  console.log("🎉 Secret activated! Extra free generation granted.");
+                }
+              }}
             >
               {previewUrl && (
                 <Image
@@ -496,6 +520,17 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
                   fill
                   className="object-cover"
                 />
+              )}
+              {/* Secret click indicator (very subtle) */}
+              {secretClickCount > 0 && secretClickCount < 6 && (
+                <div className="absolute top-2 right-2 w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'rgba(197, 165, 114, 0.3)' }}></div>
+              )}
+              {secretActivated && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <div className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'rgba(34, 197, 94, 0.2)', color: '#4ADE80' }}>
+                    ✨ Bonus granted!
+                  </div>
+                </div>
               )}
             </div>
 
