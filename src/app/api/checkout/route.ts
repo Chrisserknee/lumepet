@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     let metadata = null;
-    let priceAmount = 50; // Default to 50 cents for individual image
+    let priceAmount = CONFIG.PRICE_AMOUNT; // Use config price (default $9)
     let productName = CONFIG.PRODUCT_NAME;
     let productDescription = CONFIG.PRODUCT_DESCRIPTION;
     let productImage: string[] = [];

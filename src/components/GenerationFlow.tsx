@@ -622,35 +622,79 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
 
         {/* Generating Stage - Elegant Victorian Animation */}
         {stage === "generating" && (
-          <div className="p-8 text-center min-h-[400px] flex flex-col items-center justify-center">
-            {/* Simple elegant spinner */}
-            <div className="w-16 h-16 mb-8 relative">
+          <div className="p-8 text-center min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden">
+            {/* Decorative background elements */}
+            <div className="absolute inset-0 pointer-events-none">
+              {/* Floating particles */}
+              <div className="absolute top-1/4 left-1/4 w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'rgba(197, 165, 114, 0.3)', animationDelay: '0s', animationDuration: '2s' }}></div>
+              <div className="absolute top-1/3 right-1/4 w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'rgba(197, 165, 114, 0.4)', animationDelay: '0.5s', animationDuration: '2.5s' }}></div>
+              <div className="absolute bottom-1/3 left-1/3 w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'rgba(197, 165, 114, 0.25)', animationDelay: '1s', animationDuration: '3s' }}></div>
+              <div className="absolute bottom-1/4 right-1/3 w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'rgba(197, 165, 114, 0.35)', animationDelay: '1.5s', animationDuration: '2.2s' }}></div>
+              
+              {/* Subtle glow effect */}
+              <div 
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl opacity-20 animate-pulse"
+                style={{ backgroundColor: '#C5A572', animationDuration: '4s' }}
+              ></div>
+            </div>
+
+            {/* Beautiful ornate spinner */}
+            <div className="w-24 h-24 mb-10 relative z-10">
+              {/* Outer ring */}
               <div 
                 className="absolute inset-0 border-2 rounded-full"
                 style={{ borderColor: 'rgba(197, 165, 114, 0.2)' }}
               />
+              {/* Animated ring */}
               <div 
                 className="absolute inset-0 border-2 border-transparent rounded-full animate-spin"
-                style={{ borderTopColor: '#C5A572', animationDuration: '1.5s' }}
+                style={{ borderTopColor: '#C5A572', borderRightColor: 'rgba(197, 165, 114, 0.5)', animationDuration: '1.5s' }}
               />
+              {/* Inner decorative circle */}
+              <div 
+                className="absolute inset-2 border rounded-full"
+                style={{ borderColor: 'rgba(197, 165, 114, 0.15)' }}
+              />
+              {/* Center dot */}
+              <div 
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full animate-pulse"
+                style={{ backgroundColor: '#C5A572', animationDuration: '1s' }}
+              ></div>
             </div>
             
             {/* Fading Victorian phrase - slow elegant fade */}
-            <div className="h-24 flex items-center justify-center">
+            <div className="h-32 flex items-center justify-center mb-6 relative z-10">
               <p 
-                className={`text-xl italic transition-all duration-1000 ease-in-out ${phraseVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
+                className={`text-2xl sm:text-3xl italic transition-all duration-1000 ease-in-out ${phraseVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
                 style={{ 
                   fontFamily: "'Cormorant Garamond', Georgia, serif", 
                   color: '#C5A572',
-                  letterSpacing: '0.08em'
+                  letterSpacing: '0.1em',
+                  textShadow: '0 2px 8px rgba(197, 165, 114, 0.3)',
+                  fontWeight: 500
                 }}
               >
                 {VICTORIAN_PHRASES[currentPhrase]}
               </p>
             </div>
 
-            <p className="text-sm mt-4" style={{ color: '#7A756D' }}>
-              This may take up to 60 seconds
+            {/* Elegant progress indicator */}
+            <div className="w-64 max-w-full mx-auto mb-4 relative z-10">
+              <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(197, 165, 114, 0.1)' }}>
+                <div 
+                  className="h-full rounded-full animate-pulse"
+                  style={{ 
+                    backgroundColor: '#C5A572',
+                    width: '60%',
+                    boxShadow: '0 0 10px rgba(197, 165, 114, 0.5)',
+                    animationDuration: '2s'
+                  }}
+                ></div>
+              </div>
+            </div>
+
+            <p className="text-sm mt-2 relative z-10" style={{ color: '#7A756D', fontStyle: 'italic' }}>
+              Crafting your masterpiece... this may take up to 60 seconds
             </p>
           </div>
         )}
@@ -685,8 +729,7 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
 
             {/* Price */}
             <div className="text-center mb-2">
-              <span className="text-base sm:text-lg line-through mr-2" style={{ color: '#7A756D' }}>$9</span>
-              <span className="text-3xl sm:text-4xl font-bold" style={{ color: '#F0EDE8' }}>$0.50</span>
+              <span className="text-3xl sm:text-4xl font-bold" style={{ color: '#F0EDE8' }}>$9</span>
             </div>
 
             {/* Expiration Timer */}
