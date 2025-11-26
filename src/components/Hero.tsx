@@ -96,7 +96,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
             }}
           >
             <img 
-              src="/samples/chihuahua.jpg" 
+              src="/samples/chihuahua.png" 
               alt="Renaissance Chihuahua portrait"
               className="w-full h-full object-cover rounded"
             />
@@ -110,8 +110,8 @@ export default function Hero({ onUploadClick }: HeroProps) {
             }}
           >
             <img 
-              src="/samples/blackcat.jpg" 
-              alt="Renaissance Black Cat portrait"
+              src="/samples/golden.png" 
+              alt="Renaissance Golden Retriever portrait"
               className="w-full h-full object-cover rounded"
             />
           </div>
