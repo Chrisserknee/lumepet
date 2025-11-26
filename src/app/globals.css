@@ -274,52 +274,52 @@ h1, h2, h3, h4 {
 
 /* Position sparkles around the logo in a circle */
 .sparkle-1 { 
-  top: -10px; 
+  top: -12px; 
   left: 50%; 
   transform: translateX(-50%); 
   animation: sparkle-twinkle 2s ease-in-out infinite;
   animation-delay: 0s; 
 }
 .sparkle-2 { 
-  top: 10px; 
-  right: -10px; 
+  top: 12px; 
+  right: -12px; 
   animation: sparkle-twinkle 2s ease-in-out infinite;
   animation-delay: 0.25s; 
 }
 .sparkle-3 { 
-  bottom: 10px; 
-  right: -10px; 
+  bottom: 12px; 
+  right: -12px; 
   animation: sparkle-twinkle 2s ease-in-out infinite;
   animation-delay: 0.5s; 
 }
 .sparkle-4 { 
-  bottom: -10px; 
+  bottom: -12px; 
   left: 50%; 
   transform: translateX(-50%); 
   animation: sparkle-twinkle 2s ease-in-out infinite;
   animation-delay: 0.75s; 
 }
 .sparkle-5 { 
-  bottom: 10px; 
-  left: -10px; 
+  bottom: 12px; 
+  left: -12px; 
   animation: sparkle-twinkle 2s ease-in-out infinite;
   animation-delay: 1s; 
 }
 .sparkle-6 { 
-  top: 10px; 
-  left: -10px; 
+  top: 12px; 
+  left: -12px; 
   animation: sparkle-twinkle 2s ease-in-out infinite;
   animation-delay: 1.25s; 
 }
 .sparkle-7 { 
-  top: 25px; 
-  right: 15px; 
+  top: 30px; 
+  right: 20px; 
   animation: sparkle-twinkle 2s ease-in-out infinite;
   animation-delay: 1.5s; 
 }
 .sparkle-8 { 
-  bottom: 25px; 
-  left: 15px; 
+  bottom: 30px; 
+  left: 20px; 
   animation: sparkle-twinkle 2s ease-in-out infinite;
   animation-delay: 1.75s; 
 }

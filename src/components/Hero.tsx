@@ -8,7 +8,7 @@ interface HeroProps {
 
 export default function Hero({ onUploadClick }: HeroProps) {
   return (
-    <section className="min-h-[70vh] flex flex-col items-center justify-center px-6 py-8 sm:py-12 relative overflow-hidden">
+    <section className="min-h-[85vh] flex flex-col items-center justify-center px-6 py-12 sm:py-16 relative overflow-hidden">
       {/* Decorative elements */}
       <div 
         className="absolute top-20 left-10 w-32 h-32 rounded-full blur-3xl" 
@@ -39,7 +39,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
 
       <div className="max-w-4xl mx-auto text-center relative z-10">
         {/* LumePet Logo */}
-        <div className="mb-3 sm:mb-4 animate-fade-in-up">
+        <div className="mb-4 sm:mb-5 animate-fade-in-up">
           <div className="flex justify-center">
             <div 
               className="relative logo-sparkle-container"
@@ -50,8 +50,8 @@ export default function Hero({ onUploadClick }: HeroProps) {
               <Image
                 src="/samples/lumepet.png"
                 alt="LumePet Logo"
-                width={80}
-                height={80}
+                width={100}
+                height={100}
                 className="object-contain animate-float"
                 priority
               />
@@ -70,7 +70,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
 
         {/* Tagline */}
         <p 
-          className="text-sm sm:text-base mb-2 animate-fade-in-up tracking-wide"
+          className="text-base sm:text-lg mb-3 animate-fade-in-up tracking-wide"
           style={{ color: '#C5A572', fontFamily: "'Cormorant Garamond', Georgia, serif" }}
         >
           Your Cherished Pet in a Classic Masterpiece
@@ -78,14 +78,14 @@ export default function Hero({ onUploadClick }: HeroProps) {
 
         {/* Main headline */}
         <h1 
-          className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 animate-fade-in-up delay-100 leading-tight"
+          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold mb-4 sm:mb-5 animate-fade-in-up delay-100 leading-tight"
           style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: '#F0EDE8' }}
         >
           Turn your pet into a{" "}
           <span className="relative" style={{ color: '#C5A572' }}>
             Renaissance
             <svg 
-              className="absolute -bottom-1 left-0 w-full h-2" 
+              className="absolute -bottom-2 left-0 w-full h-3" 
               style={{ color: 'rgba(139, 58, 66, 0.6)' }} 
               viewBox="0 0 200 12" 
               preserveAspectRatio="none"
@@ -98,12 +98,44 @@ export default function Hero({ onUploadClick }: HeroProps) {
 
         {/* Subheadline */}
         <p 
-          className="text-sm sm:text-base mb-6 animate-fade-in-up delay-200 max-w-xl mx-auto"
+          className="text-base sm:text-lg mb-6 sm:mb-8 animate-fade-in-up delay-200 max-w-xl mx-auto"
           style={{ color: '#B8B2A8' }}
         >
           Upload a photo. We&apos;ll paint them like a royal oil portrait — 
           worthy of hanging in the finest galleries of Europe.
         </p>
+
+        {/* Sample portraits */}
+        <div className="flex justify-center gap-4 sm:gap-6 mb-8 sm:mb-10 animate-fade-in-up delay-300">
+          <div 
+            className="w-32 h-40 sm:w-40 sm:h-52 md:w-48 md:h-64 rounded-xl overflow-hidden shadow-2xl transform -rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, #C5A572 0%, #A68B5B 100%)',
+              padding: '5px',
+              boxShadow: '0 15px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(197, 165, 114, 0.25)'
+            }}
+          >
+            <img 
+              src="/samples/chihuahua.png" 
+              alt="Renaissance Chihuahua portrait"
+              className="w-full h-full object-cover rounded-lg"
+            />
+          </div>
+          <div 
+            className="w-32 h-40 sm:w-40 sm:h-52 md:w-48 md:h-64 rounded-xl overflow-hidden shadow-2xl transform rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300"
+            style={{ 
+              background: 'linear-gradient(135deg, #C5A572 0%, #A68B5B 100%)',
+              padding: '5px',
+              boxShadow: '0 15px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(197, 165, 114, 0.25)'
+            }}
+          >
+            <img 
+              src="/samples/golden.png" 
+              alt="Renaissance Golden Retriever portrait"
+              className="w-full h-full object-cover rounded-lg"
+            />
+          </div>
+        </div>
 
         {/* CTA Button */}
         <div className="animate-fade-in-up delay-400">
