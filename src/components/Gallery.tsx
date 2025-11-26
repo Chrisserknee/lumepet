@@ -36,8 +36,8 @@ const samples = [
   },
   {
     id: 6,
-    title: "Regal Pug",
-    pet: "Pug",
+    title: "Regal Companion",
+    pet: "Chihuahua",
     image: "/samples/dog3.png",
   },
 ];
