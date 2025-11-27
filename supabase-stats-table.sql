@@ -56,3 +56,5 @@ GRANT SELECT ON stats TO anon;
 GRANT SELECT ON stats TO authenticated;
 GRANT ALL ON stats TO service_role;
 
+
+

@@ -123,3 +123,5 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Grant execute to service_role
 GRANT EXECUTE ON FUNCTION check_generation_limit TO service_role;
 
+
+

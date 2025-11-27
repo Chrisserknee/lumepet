@@ -151,10 +151,30 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
   const [secretActivated, setSecretActivated] = useState(false);
   const [useSecretCredit, setUseSecretCredit] = useState(false);
 
-  // Set preview URL when file is provided
+  // Set preview URL when file is provided - use base64 data URL for PostHog capture
   useEffect(() => {
     if (file && !previewUrl) {
-      setPreviewUrl(URL.createObjectURL(file));
+      // Convert file to base64 data URL for PostHog session replay capture
+      // Blob URLs don't persist in session replays
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Url = reader.result as string;
+        setPreviewUrl(base64Url);
+        
+        // Capture image upload event with thumbnail for PostHog
+        captureEvent("image_uploaded_for_generation", {
+          file_name: file.name,
+          file_size: file.size,
+          file_type: file.type,
+        });
+      };
+      reader.onerror = () => {
+        // Fallback to blob URL if base64 conversion fails
+        console.warn("Base64 conversion failed, using blob URL");
+        setPreviewUrl(URL.createObjectURL(file));
+      };
+      reader.readAsDataURL(file);
+      
       // Reset secret click counter for new file
       setSecretClickCount(0);
       setSecretActivated(false);
@@ -565,6 +585,9 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
                   alt="Your pet"
                   fill
                   className="object-cover"
+                  unoptimized
+                  data-posthog-unmask="true"
+                  style={{ position: 'absolute', top: 0, left: 0 }}
                 />
               )}
               {/* Secret click indicator (very subtle) */}

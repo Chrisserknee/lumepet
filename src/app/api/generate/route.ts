@@ -438,11 +438,16 @@ export async function POST(request: NextRequest) {
           content: [
             {
               type: "text",
-              text: `FIRST: What animal is this? Start your response with EXACTLY one of these: [CAT] or [DOG] or [RABBIT]
+              text: `CRITICAL FIRST STEP: Identify the SPECIES. Start your response with EXACTLY one of these: [CAT] or [DOG] or [RABBIT]
 
-This is CRITICAL - identify the species correctly:
-- If it has whiskers, pointed ears, and a small nose = [CAT]
-- If it has a snout/muzzle and floppy or pointed dog ears = [DOG]
+SPECIES IDENTIFICATION RULES (MUST BE ACCURATE):
+- DOG: Has a snout/muzzle, floppy or pointed ears, canine facial structure, typically larger nose, wider head
+- CAT: Has whiskers, pointed triangular ears, smaller nose, more compact facial structure, feline features
+- RABBIT: Long ears, round body, no snout like a dog, different facial structure
+
+LOOK CAREFULLY: Examine the facial structure, ear shape, nose size, and overall anatomy to determine if this is a DOG or CAT.
+
+Start your response with [DOG] or [CAT] or [RABBIT] - this is CRITICAL for accurate generation.
 
 CRITICAL: Identify the specific breed or breed mix if possible. This helps with accurate generation.
 
@@ -587,22 +592,100 @@ Format your response as: "[SPECIES] AGE: [PUPPY/KITTEN/ADULT]. BREED: [breed if 
       }
     }
     
+    // CRITICAL: Double-check species detection by analyzing the image description more carefully
+    // Count explicit mentions of each species
+    const lowerDesc = petDescription.toLowerCase();
+    const dogMentions = (lowerDesc.match(/\bdog\b|\bpuppy\b|\bcanine\b/g) || []).length;
+    const catMentions = (lowerDesc.match(/\bcat\b|\bkitten\b|\bfeline\b/g) || []).length;
+    
+    // If there's a clear mismatch, correct it
+    if (dogMentions > catMentions && species === "CAT") {
+      console.warn("⚠️ CORRECTING: Description has more dog mentions but species was CAT. Changing to DOG.");
+      species = "DOG";
+    } else if (catMentions > dogMentions && species === "DOG") {
+      console.warn("⚠️ CORRECTING: Description has more cat mentions but species was DOG. Changing to CAT.");
+      species = "CAT";
+    }
+    
+    // ALWAYS validate species with a direct image check - this is critical for accuracy
+    console.log("🔍 Performing mandatory species validation check...");
+    try {
+      const speciesValidationCheck = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Look at this image carefully. Is this a DOG or a CAT? 
+
+Key differences:
+- DOG: Has a snout/muzzle, canine facial structure, typically wider head
+- CAT: Has whiskers, smaller nose, more compact face, feline features
+
+Respond with ONLY one word: DOG or CAT`,
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`,
+                  detail: "high", // Use high detail for better accuracy
+                },
+              },
+            ],
+          },
+        ],
+        max_tokens: 10,
+        temperature: 0, // Use deterministic response
+      });
+      const validatedSpecies = speciesValidationCheck.choices[0]?.message?.content?.trim().toUpperCase();
+      if (validatedSpecies === "DOG" || validatedSpecies === "CAT") {
+        // If validation differs from initial detection, use validation result
+        if (validatedSpecies !== species) {
+          console.warn(`⚠️ SPECIES MISMATCH: Initial detection was ${species}, but validation says ${validatedSpecies}. Using validated species.`);
+          species = validatedSpecies;
+        } else {
+          console.log(`✅ Species validation confirmed: ${species}`);
+        }
+      } else if (!species || species === "PET") {
+        // If we don't have a species yet, use validation result
+        if (validatedSpecies === "DOG" || validatedSpecies === "CAT") {
+          species = validatedSpecies;
+          console.log(`✅ Species set via validation: ${species}`);
+        }
+      }
+    } catch (validationError) {
+      console.error("⚠️ Species validation check failed:", validationError);
+      // Continue with existing species detection
+    }
+    
+    // Final fallback: if species is still unclear, use image analysis fallback
+    if (!species || species === "PET") {
+      console.warn("⚠️ Species still unclear after validation, using fallback analysis");
+      // This should rarely happen now, but keep as safety net
+    }
+    
     console.log("Detected age/stage:", ageStage);
     if (ageStage === "PUPPY" || ageStage === "KITTEN") {
       console.log(`✨ Age preservation enabled: Will preserve ${ageStage} features`);
     }
     
-    // Create negative species instruction
-    const notSpecies = species === "DOG" ? "DO NOT generate a cat or any feline." 
-                     : species === "CAT" ? "DO NOT generate a dog or any canine."
-                     : `DO NOT generate any animal other than a ${species}.`;
+    // Create STRONGER negative species instruction with multiple repetitions
+    const notSpecies = species === "DOG" 
+      ? "CRITICAL: This is a DOG. DO NOT generate a cat, kitten, or any feline. This MUST be a DOG. Generate ONLY a DOG." 
+      : species === "CAT" 
+      ? "CRITICAL: This is a CAT. DO NOT generate a dog, puppy, or any canine. This MUST be a CAT. Generate ONLY a CAT."
+      : `CRITICAL: This is a ${species}. DO NOT generate any other animal. Generate ONLY a ${species}.`;
     
     console.log("=== SPECIES DETECTION ===");
     console.log("Detected species:", species);
     console.log("Species enforcement:", notSpecies);
-    console.log("Pet description contains species:", {
+    console.log("Pet description analysis:", {
       containsDog: petDescription.toLowerCase().includes("dog") || petDescription.toLowerCase().includes("puppy"),
       containsCat: petDescription.toLowerCase().includes("cat") || petDescription.toLowerCase().includes("kitten"),
+      dogMentions,
+      catMentions,
       speciesMatch: speciesMatch ? speciesMatch[1] : "none",
     });
     
@@ -691,7 +774,9 @@ This is a ${ageStage} - preserve their youthful, baby features EXACTLY:
 - Preserve all youthful characteristics: rounder head, larger eyes, smaller muzzle, softer features`;
     }
     
-    const generationPrompt = `THIS IS A ${species}. Generate a ${species}. ${notSpecies}
+    const generationPrompt = `CRITICAL SPECIES REQUIREMENT: THIS IS A ${species}. YOU MUST GENERATE A ${species}. ${notSpecies} REPEAT: THIS IS A ${species} - GENERATE ONLY A ${species}. DO NOT GENERATE THE WRONG SPECIES.
+
+THIS IS A ${species}. Generate a ${species}. ${notSpecies}
 
 === CRITICAL: FULLY ANIMAL - NO HUMAN FEATURES ===
 - The ${species} must be 100% ANIMAL - NOT a human-animal hybrid
