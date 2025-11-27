@@ -810,16 +810,6 @@ export default function GenerationFlow({ file, onReset }: GenerationFlowProps) {
         {/* Result Stage - Purchase Modal */}
         {stage === "result" && result && (
           <div className="p-4 sm:p-8 max-h-[90vh] overflow-y-auto">
-            {/* Most Popular badge */}
-            <div className="flex justify-center -mt-2 sm:-mt-4 mb-2 sm:mb-4">
-              <span 
-                className="px-3 sm:px-4 py-1 text-xs font-semibold uppercase tracking-wider rounded-full"
-                style={{ backgroundColor: '#10B981', color: 'white' }}
-              >
-                Most Popular
-              </span>
-            </div>
-
             {/* Download icon */}
             <div className="flex justify-center mb-2 sm:mb-4">
               <svg className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: '#B8B2A8' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
