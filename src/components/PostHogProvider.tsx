@@ -41,8 +41,6 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
           maskAllInputs: false,
           // Only mask elements with this data attribute (for sensitive text)
           maskTextSelector: '[data-posthog-mask]',
-          // Capture canvas elements (for any canvas-based image processing)
-          recordCanvas: true,
         },
       });
     }

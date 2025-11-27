@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { saveMetadata, getMetadata } from "@/lib/supabase";
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+// Initialize Stripe lazily to avoid build-time errors
+function getStripe(): Stripe {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error("STRIPE_SECRET_KEY is not configured");
+  }
+  return new Stripe(secretKey);
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -28,6 +34,7 @@ export async function POST(request: NextRequest) {
 
   try {
     // Verify the webhook signature
+    const stripe = getStripe();
     event = stripe.webhooks.constructEvent(
       body,
       signature,
