@@ -743,7 +743,7 @@ FULL BODY PORTRAIT: The ${species} is SEATED regally on ${cushion}, wearing ${ro
         hd_url: hdUrl,
         preview_url: previewUrl,
         ...(usePackCredit ? { pack_generation: true } : {}),
-        ...(useSecretCredit ? { secret_generation: true } : {}),
+        // Note: secret_generation not saved to DB (testing feature only)
       });
       console.log("Metadata saved successfully");
       
