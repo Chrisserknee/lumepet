@@ -496,21 +496,21 @@ Format your response as: "[SPECIES] AGE: [PUPPY/KITTEN/ADULT]. BREED: [breed if 
     ];
     
     const backgrounds = [
-      "DARK background with RICH NAVY BLUE velvet drape on one side and white accent on the other",
-      "DEEP shadowy background with LIGHT BLUE silk curtain and white column",
-      "DARK atmospheric backdrop with CHARCOAL BLACK velvet drapery cascading on the side",
-      "MOODY dark background with SLATE GRAY velvet drape and white architectural detail",
-      "SHADOWY backdrop with DEEP BLACK velvet curtain and soft white candlelight glow",
-      "DARK old master background with RICH NAVY BLUE and WHITE silk drapes",
-      "DEEP black backdrop with LIGHT PERIWINKLE BLUE silk drape and white frame edge",
-      "CLASSIC dark background with CHARCOAL GRAY velvet and LIGHT BLUE accents visible"
+      "ROYAL PALACE background with BRIGHT RICH NAVY BLUE velvet drapery cascading elegantly, ornate white marble columns, golden architectural details, warm ambient light",
+      "REGAL COURT background with LUMINOUS LIGHT BLUE silk curtains, white marble pillars, intricate gold leaf patterns, bright natural window light",
+      "NOBLE HALL background with ELEGANT CHARCOAL GRAY velvet drapes with gold trim, white marble accents, ornate gilded frames, soft warm lighting",
+      "ROYAL CHAMBER background with BRIGHT NAVY BLUE and PURE WHITE silk drapes, marble columns, gold decorative elements, well-lit and airy",
+      "PALATIAL SETTING background with RICH PERIWINKLE BLUE velvet curtains, white marble details, golden scrollwork, bright diffused light",
+      "REGAL INTERIOR background with LUMINOUS LIGHT BLUE and IVORY WHITE silk drapes, ornate marble architecture, gold accents, warm natural light",
+      "NOBLE BACKGROUND with ELEGANT SLATE BLUE velvet drapery, white marble columns, gold trim details, bright and beautiful lighting",
+      "ROYAL SETTING background with BRIGHT NAVY BLUE velvet, pristine white marble, intricate gold decorations, luminous warm ambient glow"
     ];
     
     const lightingDirections = [
-      "bright natural daylight from upper left, creating soft shadows",
-      "clean diffused light from the left, with gentle fill light",
-      "bright studio lighting from above and left, evenly illuminated",
-      "soft natural window light from the left, bright and airy"
+      "BRIGHT, WARM natural daylight from upper left, creating soft elegant shadows, well-lit subject",
+      "LUMINOUS diffused light from the left with gentle fill light, bright and beautiful",
+      "BRIGHT, EVEN studio lighting from above and left, evenly illuminated, no harsh shadows",
+      "WARM natural window light from the left, bright and airy, creating a glowing effect"
     ];
 
     // Pick random elements
@@ -579,24 +579,34 @@ ${petDescription}${genderInfo}${agePreservationInstructions}
 
 This ${species} portrait must look like THIS EXACT ${species}. ${notSpecies}
 
-=== STYLE: ELEGANT, REFINED OIL PAINTING ===
-Classical oil painting with ELEGANT, REFINED colors and SILKY luminous textures.
+=== STYLE: CLASSICAL OIL PAINTING - ROYAL PORTRAIT ===
+This MUST look like a REAL OIL PAINTING with visible brushstrokes, rich texture, and luminous depth:
+- CLASSICAL OIL PAINTING TECHNIQUE: Visible brushstrokes, rich impasto texture, layered glazing
+- OLD MASTER STYLE: Like Rembrandt, Van Dyck, or Gainsborough - rich, luminous, painterly
+- TEXTURE: Visible paint texture, brush marks, rich oil paint application
+- DEPTH: Multiple layers of paint creating luminous depth and richness
+- SURFACE QUALITY: Matte to semi-gloss finish typical of oil paintings
+- NO PHOTOGRAPHIC LOOK: Must look hand-painted, not like a photo filter
 
-COLOR PALETTE - ELEGANT AND REFINED:
-- PRIMARY COLORS: Light blues, pure whites, rich blacks, charcoal grays
-- ACCENT COLORS: Silver threads, white pearls, light blue gems (minimal use)
-- AVOID: Yellow, gold, warm tones - keep palette cool and elegant
-- FABRICS: White ermine fur with black spots, white lace, light blue satin, charcoal velvet
-- JEWELRY: White pearls, silver, light blue sapphires (no gold) - draped around neck naturally
-- Keep colors sophisticated and understated - elegant, not overdone
+COLOR PALETTE - BRIGHT, BEAUTIFUL, ROYAL:
+- PRIMARY COLORS: BRIGHT light blues, PURE whites, rich deep blues, elegant grays
+- ACCENT COLORS: Silver threads, white pearls, light blue gems, subtle gold accents
+- BACKGROUND: BRIGHT and ROYAL - rich navy blues, luminous whites, warm ambient lighting
+- AVOID: Dark, moody, shadowy backgrounds - use BRIGHT, ROYAL, well-lit backgrounds
+- FABRICS: White ermine fur with black spots, white lace, BRIGHT light blue satin, rich velvet
+- JEWELRY: White pearls, silver, light blue sapphires, subtle gold details - draped elegantly
+- COLORS: BRIGHT, SATURATED, BEAUTIFUL - not muted or dark
 
 KEY QUALITIES:
-- SILKY, LUMINOUS fabric textures - shimmering satin, plush velvet
-- Well-lit subject against dark background - the pet GLOWS with light
-- Delicate floral embroidery in light blue, white, and silver (no gold)
-- Soft, smooth brushwork with luminous glazing technique
-- Refined color palette - elegant blues, whites, blacks
+- BRIGHT, ROYAL BACKGROUND - well-lit palace or noble hall setting
+- SILKY, LUMINOUS fabric textures - shimmering satin, plush velvet with visible texture
+- WELL-LIT SUBJECT - the pet GLOWS with warm, bright light
+- Delicate floral embroidery in BRIGHT light blue, white, and silver
+- VISIBLE OIL PAINT BRUSHSTROKES - rich, textured, painterly surface
+- LUMINOUS GLAZING TECHNIQUE - multiple layers creating depth and richness
+- BRIGHT, BEAUTIFUL color palette - royal blues, pure whites, elegant grays
 - NATURAL ANIMAL BODY - four legs, normal pet anatomy
+- ROYAL, REGAL atmosphere - like a palace portrait
 
 === COLOR MATCHING REQUIREMENTS ===
 - Match colors EXACTLY as described - if described as 'midnight black', use midnight black, not charcoal gray
@@ -620,7 +630,9 @@ KEY QUALITIES:
 - Nose size relative to face must match - if described as 'small nose', generate a small nose
 - Muzzle length must match - if described as 'short muzzle', generate a short muzzle
 
-FULL BODY PORTRAIT: The ${species} is SEATED regally on ${cushion}, wearing ${robe} draped over its back, with ${jewelryItem} around its neck. ${background}. ${lighting}. Show the ENTIRE pet from ears to paws - wide framing, not a close-up. Museum-quality fine art portrait of a noble pet - fully animal, majestic seated pose, complete body visible. The pet MUST match the description EXACTLY in every detail.`;
+FULL BODY PORTRAIT: The ${species} is SEATED regally on ${cushion}, wearing ${robe} draped over its back, with ${jewelryItem} around its neck. ${background}. ${lighting}. Show the ENTIRE pet from ears to paws - wide framing, not a close-up. 
+
+CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTING with visible brushstrokes, rich texture, and luminous depth. Like an old master portrait - Rembrandt, Van Dyck, or Gainsborough style. Rich, painterly surface with visible paint application. BRIGHT, ROYAL, WELL-LIT background - not dark or moody. Museum-quality fine art oil painting portrait of a noble pet - fully animal, majestic seated pose, complete body visible, BRIGHT and BEAUTIFUL colors. The pet MUST match the description EXACTLY in every detail.`;
 
     // Generate image with GPT-Image-1 (OpenAI's newest image model)
     console.log("Generating image with gpt-image-1...");
