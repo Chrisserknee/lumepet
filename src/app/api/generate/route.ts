@@ -7,6 +7,121 @@ import { uploadImage, saveMetadata, incrementPortraitCount } from "@/lib/supabas
 import { checkRateLimit, getClientIP, RATE_LIMITS } from "@/lib/rate-limit";
 import { validateImageMagicBytes } from "@/lib/validation";
 
+// Compare original pet photo with generated portrait and create refinement prompt
+async function compareAndRefine(
+  openai: OpenAI,
+  originalImageBuffer: Buffer,
+  generatedImageBuffer: Buffer,
+  originalDescription: string,
+  species: string
+): Promise<string> {
+  console.log("=== STAGE 2: Comparing and refining ===");
+  
+  // Process both images for vision API
+  const processedOriginal = await sharp(originalImageBuffer)
+    .resize(1024, 1024, { fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 95 })
+    .toBuffer();
+  
+  const processedGenerated = await sharp(generatedImageBuffer)
+    .resize(1024, 1024, { fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 95 })
+    .toBuffer();
+  
+  const originalBase64 = processedOriginal.toString("base64");
+  const generatedBase64 = processedGenerated.toString("base64");
+  
+  // Use GPT-4o vision to compare both images
+  const comparisonResponse = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `You are comparing two images to identify differences and create a refinement prompt.
+
+IMAGE 1 (LEFT): The ORIGINAL pet photo - this is the reference that must be matched exactly.
+IMAGE 2 (RIGHT): The GENERATED portrait - this needs to be refined to match the original.
+
+ORIGINAL DESCRIPTION: ${originalDescription}
+
+CRITICAL TASK: Compare these two images and identify EVERY difference between the generated portrait and the original pet photo.
+
+Analyze these aspects in detail:
+
+1. MARKINGS AND PATTERNS:
+   - Are ALL markings from the original present in the generated image?
+   - Are markings in the EXACT same locations? (left/right, top/bottom)
+   - Are any markings missing, added incorrectly, or in wrong locations?
+   - List each discrepancy with specific location details
+
+2. COLORS:
+   - Do colors match EXACTLY? (e.g., is "midnight black" actually midnight black, or is it charcoal gray?)
+   - Are color gradients preserved? (darker on back, lighter on belly, etc.)
+   - Are there any color mismatches or approximations?
+   - List each color discrepancy
+
+3. FACE PROPORTIONS:
+   - Does the face shape match? (round vs oval vs square)
+   - Is eye spacing correct? (close together vs wide apart)
+   - Is nose size relative to face correct?
+   - Is muzzle length correct? (short vs medium vs long)
+   - List each proportion discrepancy
+
+4. EXPRESSION AND FEATURES:
+   - Does the facial expression match the original?
+   - Are unique features captured? (scars, distinctive markings, etc.)
+   - Is the overall "look" of the pet preserved?
+   - List any missing or incorrect features
+
+5. OVERALL ACCURACY:
+   - On a scale of 1-10, how accurately does the generated image match the original?
+   - What are the 3-5 most critical issues that need to be fixed?
+
+FORMAT YOUR RESPONSE AS A REFINEMENT PROMPT:
+
+=== REFINEMENT NEEDED ===
+[Overall accuracy score: X/10]
+
+CRITICAL CORRECTIONS REQUIRED:
+1. [Specific issue 1]: [How to fix it]
+2. [Specific issue 2]: [How to fix it]
+3. [Specific issue 3]: [How to fix it]
+[Continue for all issues found]
+
+REFINED DESCRIPTION:
+[Updated description incorporating all corrections]
+
+The refinement prompt should be specific, actionable, and address every discrepancy you find.`,
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:image/jpeg;base64,${originalBase64}`,
+              detail: "high",
+            },
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:image/jpeg;base64,${generatedBase64}`,
+              detail: "high",
+            },
+          },
+        ],
+      },
+    ],
+    max_tokens: 1500,
+  });
+  
+  const refinementPrompt = comparisonResponse.choices[0]?.message?.content || "";
+  console.log("Refinement prompt generated:", refinementPrompt.substring(0, 300));
+  
+  return refinementPrompt;
+}
+
 // Create watermarked version of image with LumePet logo
 async function createWatermarkedImage(inputBuffer: Buffer): Promise<Buffer> {
   const image = sharp(inputBuffer);
@@ -25,21 +140,21 @@ async function createWatermarkedImage(inputBuffer: Buffer): Promise<Buffer> {
   } catch (error) {
     console.error("Failed to load logo, using text watermark:", error);
     // Fallback to text watermark if logo not found
-    const watermarkSvg = `
-      <svg width="${width}" height="${height}">
-        <defs>
-          <pattern id="watermark" width="400" height="200" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
-            <text x="0" y="100" 
-                  font-family="Georgia, serif" 
-                  font-size="28" 
-                  font-weight="bold"
+  const watermarkSvg = `
+    <svg width="${width}" height="${height}">
+      <defs>
+        <pattern id="watermark" width="400" height="200" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
+          <text x="0" y="100" 
+                font-family="Georgia, serif" 
+                font-size="28" 
+                font-weight="bold"
                   fill="rgba(255,255,255,0.5)"
-                  text-anchor="start">
+                text-anchor="start">
               LUMEPET – PREVIEW ONLY
-            </text>
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#watermark)"/>
+          </text>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#watermark)"/>
       </svg>
     `;
     return await sharp(inputBuffer)
@@ -689,7 +804,7 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
     
     // IMPORTANT: Prompt generation is IDENTICAL for all generation types (free, pack, secret)
     // The only difference is watermarking, which happens AFTER image generation
-    
+
     const imageResponse = await openai.images.generate({
       model: "gpt-image-1",
       prompt: generationPrompt,
@@ -705,11 +820,11 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
     }
 
     // Handle both base64 (gpt-image-1) and URL (dall-e-3) responses
-    let generatedBuffer: Buffer;
-    
+    let firstGeneratedBuffer: Buffer;
+
     if (imageData.b64_json) {
       console.log("Processing base64 image from gpt-image-1...");
-      generatedBuffer = Buffer.from(imageData.b64_json, "base64");
+      firstGeneratedBuffer = Buffer.from(imageData.b64_json, "base64");
     } else if (imageData.url) {
       console.log("Downloading image from URL...");
       const downloadResponse = await fetch(imageData.url);
@@ -717,10 +832,94 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
         throw new Error(`Failed to download image: ${downloadResponse.status}`);
       }
       const arrayBuffer = await downloadResponse.arrayBuffer();
-      generatedBuffer = Buffer.from(arrayBuffer);
+      firstGeneratedBuffer = Buffer.from(arrayBuffer);
     } else {
       throw new Error("No image data in response");
     }
+    
+    console.log("✅ Stage 1 complete: First portrait generated");
+    
+    // STAGE 2: Compare and refine (can be disabled via environment variable)
+    const enableTwoStage = process.env.ENABLE_TWO_STAGE_GENERATION !== "false"; // Default: enabled
+    let finalGeneratedBuffer: Buffer = firstGeneratedBuffer; // Fallback to first if refinement fails
+    let refinementUsed = false;
+    
+    if (enableTwoStage) {
+      try {
+        console.log("=== Starting Stage 2: Comparison and Refinement ===");
+        const refinementPrompt = await compareAndRefine(
+          openai,
+          buffer, // Original pet photo
+          firstGeneratedBuffer, // First generated portrait
+          petDescription,
+          species
+        );
+      
+      if (refinementPrompt && refinementPrompt.length > 100) {
+        console.log("Refinement prompt received, generating refined portrait...");
+        
+        // Create refined generation prompt combining original prompt with corrections
+        // Truncate refinement prompt if too long (API limits)
+        const maxRefinementLength = 2000;
+        const truncatedRefinement = refinementPrompt.length > maxRefinementLength 
+          ? refinementPrompt.substring(0, maxRefinementLength) + "..."
+          : refinementPrompt;
+        
+        const refinedGenerationPrompt = `${generationPrompt}
+
+=== REFINEMENT STAGE - CRITICAL CORRECTIONS FROM COMPARISON ===
+This is a SECOND PASS refinement. The first generation was compared with the original pet photo, and these specific corrections were identified:
+
+${truncatedRefinement}
+
+CRITICAL: The refined portrait MUST address EVERY correction listed above. This is your opportunity to fix all discrepancies and create a portrait that matches the original pet photo EXACTLY. Pay special attention to:
+- Markings and their exact locations
+- Color accuracy
+- Face proportions
+- Expression and unique features
+
+Generate a refined portrait that addresses ALL corrections and matches the original pet photo with exceptional accuracy.`;
+        
+        // Generate refined image
+        const refinedImageResponse = await openai.images.generate({
+          model: "gpt-image-1",
+          prompt: refinedGenerationPrompt,
+          n: 1,
+          size: "1024x1024",
+          quality: "high",
+        });
+        
+        const refinedImageData = refinedImageResponse.data?.[0];
+        
+        if (refinedImageData) {
+          if (refinedImageData.b64_json) {
+            finalGeneratedBuffer = Buffer.from(refinedImageData.b64_json, "base64");
+            refinementUsed = true;
+            console.log("✅ Stage 2 complete: Refined portrait generated");
+          } else if (refinedImageData.url) {
+            const downloadResponse = await fetch(refinedImageData.url);
+            if (downloadResponse.ok) {
+              const arrayBuffer = await downloadResponse.arrayBuffer();
+              finalGeneratedBuffer = Buffer.from(arrayBuffer);
+              refinementUsed = true;
+              console.log("✅ Stage 2 complete: Refined portrait downloaded");
+            }
+          }
+        }
+        } else {
+          console.log("⚠️ Refinement prompt too short or empty, using first generation");
+        }
+      } catch (refinementError) {
+        console.error("⚠️ Refinement stage failed, using first generation:", refinementError);
+        // Continue with first generation as fallback
+      }
+    } else {
+      console.log("Two-stage generation disabled, using first generation only");
+    }
+    
+    // Use the final buffer (refined if available, otherwise first)
+    const generatedBuffer = finalGeneratedBuffer;
+    console.log(`Using ${refinementUsed ? "refined" : "first"} generation for final output`);
 
     // Create preview (watermarked if not using pack credit or secret credit, un-watermarked if using either)
     let previewBuffer: Buffer;
@@ -793,15 +992,22 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
         descriptionPreview: finalDescription.substring(0, 100),
       });
       
-      await saveMetadata(imageId, {
-        created_at: new Date().toISOString(),
+    await saveMetadata(imageId, {
+      created_at: new Date().toISOString(),
         paid: usePackCredit || useSecretCredit, // Mark as paid if using pack credit or secret credit
         pet_description: finalDescription,
-        hd_url: hdUrl,
-        preview_url: previewUrl,
+      hd_url: hdUrl,
+      preview_url: previewUrl,
         ...(usePackCredit ? { pack_generation: true } : {}),
         // Note: secret_generation not saved to DB (testing feature only)
+        // Note: refinement_used could be added to DB schema if tracking needed
       });
+      
+      if (refinementUsed) {
+        console.log("✅ Two-stage generation completed successfully - refined portrait used");
+      } else if (enableTwoStage) {
+        console.log("ℹ️ Two-stage generation attempted but refinement not used - first generation used");
+      }
       console.log("Metadata saved successfully");
       
       // Increment global portrait counter
