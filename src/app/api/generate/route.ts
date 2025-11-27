@@ -306,6 +306,11 @@ This is CRITICAL - identify the species correctly:
 
 CRITICAL: Identify the specific breed or breed mix if possible. This helps with accurate generation.
 
+CRITICAL: Determine the AGE/STAGE of the animal:
+- If this is a PUPPY (young dog): Note "PUPPY" - look for large eyes relative to face, rounder features, smaller size proportions, playful appearance
+- If this is a KITTEN (young cat): Note "KITTEN" - look for large eyes relative to face, rounder features, smaller size proportions, youthful appearance
+- If this is an ADULT: Note "ADULT" - fully developed features, mature proportions
+
 Start with [CAT] or [DOG] in brackets, then describe:
 
 SECTION 1 - WHAT MAKES THIS PET UNIQUE (most important):
@@ -342,7 +347,12 @@ SECTION 5 - FUR TYPE:
 - Length and texture (short sleek, medium fluffy, long silky, wiry)
 - Any variations in fur length in different areas
 
-Format your response as: "[SPECIES] BREED: [breed if identifiable]. UNIQUE FEATURES: [list the 5-7 most distinctive things with exact locations]. FACE: [face details including proportions]. EARS: [ear details]. COLORING: [color details with exact locations of all markings]. FUR: [texture]."`,
+SECTION 6 - AGE/STAGE:
+- Is this a PUPPY, KITTEN, or ADULT?
+- If young: Describe youthful features (large eyes relative to face, rounder features, smaller proportions, etc.)
+- Preserve the exact age appearance - do not age up or down
+
+Format your response as: "[SPECIES] AGE: [PUPPY/KITTEN/ADULT]. BREED: [breed if identifiable]. UNIQUE FEATURES: [list the 5-7 most distinctive things with exact locations]. FACE: [face details including proportions]. EARS: [ear details]. COLORING: [color details with exact locations of all markings]. FUR: [texture]."`,
             },
             {
               type: "image_url",
@@ -403,6 +413,22 @@ Format your response as: "[SPECIES] BREED: [breed if identifiable]. UNIQUE FEATU
     const speciesMatch = petDescription.match(/\[(DOG|CAT|RABBIT|BIRD|HAMSTER|GUINEA PIG|FERRET|HORSE|PET)\]/i);
     let species = speciesMatch ? speciesMatch[1].toUpperCase() : "";
     
+    // Extract age/stage from the description
+    const ageMatch = petDescription.match(/AGE:\s*(PUPPY|KITTEN|ADULT)/i);
+    let ageStage = ageMatch ? ageMatch[1].toUpperCase() : "";
+    
+    // Fallback: search for age keywords if explicit format wasn't found
+    if (!ageStage) {
+      const lowerDesc = petDescription.toLowerCase();
+      if (lowerDesc.includes("puppy") || lowerDesc.includes("young dog")) {
+        ageStage = "PUPPY";
+      } else if (lowerDesc.includes("kitten") || lowerDesc.includes("young cat")) {
+        ageStage = "KITTEN";
+      } else {
+        ageStage = "ADULT"; // Default to adult if not specified
+      }
+    }
+    
     // Fallback: search for species keywords if bracket format wasn't found
     if (!species) {
       const lowerDesc = petDescription.toLowerCase();
@@ -419,6 +445,11 @@ Format your response as: "[SPECIES] BREED: [breed if identifiable]. UNIQUE FEATU
       } else {
         species = "PET";
       }
+    }
+    
+    console.log("Detected age/stage:", ageStage);
+    if (ageStage === "PUPPY" || ageStage === "KITTEN") {
+      console.log(`✨ Age preservation enabled: Will preserve ${ageStage} features`);
     }
     
     // Create negative species instruction
@@ -491,6 +522,21 @@ Format your response as: "[SPECIES] BREED: [breed if identifiable]. UNIQUE FEATU
     // Step 2: Generate Renaissance royal portrait - SPECIES AND PET ACCURACY ARE #1 PRIORITY
     const genderInfo = gender ? `\n=== GENDER ===\nThis is a ${gender === "male" ? "male" : "female"} ${species}.` : "";
     
+    // Age preservation instructions
+    let agePreservationInstructions = "";
+    if (ageStage === "PUPPY" || ageStage === "KITTEN") {
+      agePreservationInstructions = `
+=== CRITICAL: PRESERVE YOUTHFUL APPEARANCE ===
+This is a ${ageStage} - preserve their youthful, baby features EXACTLY:
+- Keep large eyes relative to face size (puppies/kittens have proportionally larger eyes)
+- Maintain rounder, softer facial features (not mature/adult proportions)
+- Preserve smaller body proportions and youthful appearance
+- Keep the playful, innocent expression characteristic of young animals
+- DO NOT age them up - maintain their exact puppy/kitten stage
+- The portrait should reflect the animal exactly as it appears - a ${ageStage}, not an adult
+- Preserve all youthful characteristics: rounder head, larger eyes, smaller muzzle, softer features`;
+    }
+    
     const generationPrompt = `THIS IS A ${species}. Generate a ${species}. ${notSpecies}
 
 === CRITICAL: FULLY ANIMAL - NO HUMAN FEATURES ===
@@ -528,7 +574,7 @@ The generated pet MUST match the description EXACTLY:
 - Eye spacing, nose size, muzzle length must match the description precisely
 
 === THE ${species} - MUST MATCH EXACTLY ===
-${petDescription}${genderInfo}
+${petDescription}${genderInfo}${agePreservationInstructions}
 
 This ${species} portrait must look like THIS EXACT ${species}. ${notSpecies}
 
