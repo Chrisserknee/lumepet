@@ -16,8 +16,18 @@ export default function UploadModal({ isOpen, onClose, onFileSelected }: UploadM
   const validateFile = (file: File): boolean => {
     setError(null);
     
-    const validTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!validTypes.includes(file.type)) {
+    // More lenient type checking for Android (sometimes MIME types can be inconsistent)
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const validExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+    const fileName = file.name.toLowerCase();
+    const fileType = file.type.toLowerCase();
+    
+    // Check both MIME type and file extension for better Android compatibility
+    const isValidType = validTypes.includes(fileType) || 
+                       validExtensions.some(ext => fileName.endsWith(ext)) ||
+                       fileType.startsWith("image/"); // Fallback: accept any image/* type
+    
+    if (!isValidType && file.size > 0) {
       setError("Please upload a JPEG, PNG, or WebP image.");
       return false;
     }
@@ -27,13 +37,31 @@ export default function UploadModal({ isOpen, onClose, onFileSelected }: UploadM
       return false;
     }
     
+    if (file.size === 0) {
+      setError("File appears to be empty. Please try a different image.");
+      return false;
+    }
+    
     return true;
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && validateFile(file)) {
-      onFileSelected(file);
+    if (file) {
+      // Check if file was actually selected (not just dialog closed)
+      if (file.size === 0 && file.name === '') {
+        // User cancelled or permission denied
+        return;
+      }
+      
+      if (validateFile(file)) {
+        onFileSelected(file);
+      }
+    }
+    
+    // Reset input to allow selecting same file again
+    if (inputRef.current) {
+      inputRef.current.value = '';
     }
   };
 
@@ -119,12 +147,19 @@ export default function UploadModal({ isOpen, onClose, onFileSelected }: UploadM
             borderColor: isDragging ? '#C5A572' : 'rgba(197, 165, 114, 0.2)',
             backgroundColor: isDragging ? 'rgba(197, 165, 114, 0.05)' : 'rgba(255, 255, 255, 0.02)'
           }}
-          onClick={() => inputRef.current?.click()}
+          onClick={() => {
+            try {
+              inputRef.current?.click();
+            } catch (error) {
+              console.error("File input error:", error);
+              setError("Unable to access files. Please check your browser permissions or try a different browser.");
+            }
+          }}
         >
           <input
             ref={inputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             onChange={handleFileChange}
             className="hidden"
           />
