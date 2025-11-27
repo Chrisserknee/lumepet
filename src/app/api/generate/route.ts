@@ -471,13 +471,21 @@ Format your response as: "[SPECIES] UNIQUE FEATURES: [list the 3-5 most distinct
 - Natural animal proportions and body structure
 - The pet is a REAL ${species}, not an anthropomorphic character
 
+=== COMPOSITION: FULL BODY PORTRAIT - NOT A CLOSE-UP ===
+- WIDE FRAMING - show the ENTIRE ${species} from head to paws
+- DO NOT crop the ears - leave plenty of space above the head
+- Medium distance shot - the pet takes up about 60-70% of the frame height
+- Include visible space/padding around the entire subject
+- NOT a face close-up - this is a FULL BODY seated portrait
+
 === POSE: REGAL SEATED POSITION ===
 - The ${species} is SEATED majestically on a cushion/throne
-- Front paws/legs visible, resting elegantly
+- ALL FOUR PAWS visible - front paws resting elegantly, back paws tucked
 - Head held high with noble, dignified expression
 - Natural seated animal pose - like a royal pet portrait
-- Full body visible, seated facing slightly toward viewer
+- FULL BODY clearly visible from ears to tail/paws
 - Proud, regal posture befitting nobility
+- The pet is centered in the frame with room to breathe around edges
 
 === THE ${species} - MUST MATCH EXACTLY ===
 ${petDescription}${genderInfo}
@@ -503,7 +511,7 @@ KEY QUALITIES:
 - Refined color palette - elegant blues, whites, blacks
 - NATURAL ANIMAL BODY - four legs, normal pet anatomy
 
-The ${species} is SEATED regally on ${cushion}, wearing ${robe} draped over its back, with ${jewelryItem} around its neck. ${background}. ${lighting}. Museum-quality fine art portrait of a noble pet - fully animal, majestic pose.`;
+FULL BODY PORTRAIT: The ${species} is SEATED regally on ${cushion}, wearing ${robe} draped over its back, with ${jewelryItem} around its neck. ${background}. ${lighting}. Show the ENTIRE pet from ears to paws - wide framing, not a close-up. Museum-quality fine art portrait of a noble pet - fully animal, majestic seated pose, complete body visible.`;
 
     // Generate image with GPT-Image-1 (OpenAI's newest image model)
     console.log("Generating image with gpt-image-1...");
