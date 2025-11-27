@@ -4,6 +4,7 @@ import { useState } from "react";
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
 import Gallery from "@/components/Gallery";
+import Testimonials from "@/components/Testimonials";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 import UploadModal from "@/components/UploadModal";
@@ -36,6 +37,9 @@ export default function Home() {
 
       {/* Sample Gallery Section */}
       <Gallery />
+
+      {/* Testimonials Section */}
+      <Testimonials />
 
       {/* FAQ Section */}
       <FAQ />
