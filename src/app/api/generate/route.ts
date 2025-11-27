@@ -70,89 +70,100 @@ async function createWatermarkedImage(inputBuffer: Buffer): Promise<Buffer> {
   const logoBase64 = logoBuffer.toString("base64");
   const logoMimeType = logoMetadata.format === "png" ? "image/png" : "image/jpeg";
 
-  // Create SVG with logo watermarks at multiple positions with low opacity
+  // Create SVG with logo watermarks around the edges (NOT in center to keep pet face visible)
   const watermarkSvg = `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-      <!-- Center watermark (largest, 40% opacity) -->
+      <!-- NO CENTER WATERMARK - keep pet's face clearly visible -->
+      
+      <!-- Top-left corner (larger, 45% opacity) -->
       <image 
-        x="${Math.round((width - watermarkWidth) / 2)}" 
-        y="${Math.round((height - watermarkHeight) / 2)}" 
-        width="${Math.round(watermarkWidth)}" 
-        height="${Math.round(watermarkHeight)}" 
-        href="data:${logoMimeType};base64,${logoBase64}"
-        opacity="0.4"
-      />
-      <!-- Top-left corner (smaller, 35% opacity) -->
-      <image 
-        x="${Math.round(width * 0.08)}" 
-        y="${Math.round(height * 0.08)}" 
-        width="${Math.round(watermarkWidth * 0.5)}" 
-        height="${Math.round(watermarkHeight * 0.5)}" 
-        href="data:${logoMimeType};base64,${logoBase64}"
-        opacity="0.35"
-      />
-      <!-- Top-right corner (smaller, 35% opacity) -->
-      <image 
-        x="${Math.round(width * 0.92 - watermarkWidth * 0.5)}" 
-        y="${Math.round(height * 0.08)}" 
-        width="${Math.round(watermarkWidth * 0.5)}" 
-        height="${Math.round(watermarkHeight * 0.5)}" 
-        href="data:${logoMimeType};base64,${logoBase64}"
-        opacity="0.35"
-      />
-      <!-- Bottom-left corner (smaller, 35% opacity) -->
-      <image 
-        x="${Math.round(width * 0.08)}" 
-        y="${Math.round(height * 0.92 - watermarkHeight * 0.5)}" 
-        width="${Math.round(watermarkWidth * 0.5)}" 
-        height="${Math.round(watermarkHeight * 0.5)}" 
-        href="data:${logoMimeType};base64,${logoBase64}"
-        opacity="0.35"
-      />
-      <!-- Bottom-right corner (smaller, 35% opacity) -->
-      <image 
-        x="${Math.round(width * 0.92 - watermarkWidth * 0.5)}" 
-        y="${Math.round(height * 0.92 - watermarkHeight * 0.5)}" 
-        width="${Math.round(watermarkWidth * 0.5)}" 
-        height="${Math.round(watermarkHeight * 0.5)}" 
-        href="data:${logoMimeType};base64,${logoBase64}"
-        opacity="0.35"
-      />
-      <!-- Top center (medium, 30% opacity) -->
-      <image 
-        x="${Math.round((width - watermarkWidth * 0.6) / 2)}" 
+        x="${Math.round(width * 0.05)}" 
         y="${Math.round(height * 0.05)}" 
         width="${Math.round(watermarkWidth * 0.6)}" 
         height="${Math.round(watermarkHeight * 0.6)}" 
         href="data:${logoMimeType};base64,${logoBase64}"
-        opacity="0.3"
+        opacity="0.45"
       />
-      <!-- Bottom center (medium, 30% opacity) -->
+      <!-- Top-right corner (larger, 45% opacity) -->
       <image 
-        x="${Math.round((width - watermarkWidth * 0.6) / 2)}" 
+        x="${Math.round(width * 0.95 - watermarkWidth * 0.6)}" 
+        y="${Math.round(height * 0.05)}" 
+        width="${Math.round(watermarkWidth * 0.6)}" 
+        height="${Math.round(watermarkHeight * 0.6)}" 
+        href="data:${logoMimeType};base64,${logoBase64}"
+        opacity="0.45"
+      />
+      <!-- Bottom-left corner (larger, 45% opacity) -->
+      <image 
+        x="${Math.round(width * 0.05)}" 
         y="${Math.round(height * 0.95 - watermarkHeight * 0.6)}" 
         width="${Math.round(watermarkWidth * 0.6)}" 
         height="${Math.round(watermarkHeight * 0.6)}" 
         href="data:${logoMimeType};base64,${logoBase64}"
-        opacity="0.3"
+        opacity="0.45"
       />
-      <!-- Left side center (medium, 30% opacity) -->
-      <image 
-        x="${Math.round(width * 0.05)}" 
-        y="${Math.round((height - watermarkHeight * 0.6) / 2)}" 
-        width="${Math.round(watermarkWidth * 0.6)}" 
-        height="${Math.round(watermarkHeight * 0.6)}" 
-        href="data:${logoMimeType};base64,${logoBase64}"
-        opacity="0.3"
-      />
-      <!-- Right side center (medium, 30% opacity) -->
+      <!-- Bottom-right corner (larger, 45% opacity) -->
       <image 
         x="${Math.round(width * 0.95 - watermarkWidth * 0.6)}" 
-        y="${Math.round((height - watermarkHeight * 0.6) / 2)}" 
+        y="${Math.round(height * 0.95 - watermarkHeight * 0.6)}" 
         width="${Math.round(watermarkWidth * 0.6)}" 
         height="${Math.round(watermarkHeight * 0.6)}" 
         href="data:${logoMimeType};base64,${logoBase64}"
-        opacity="0.3"
+        opacity="0.45"
+      />
+      <!-- Top center (medium, 40% opacity) -->
+      <image 
+        x="${Math.round((width - watermarkWidth * 0.5) / 2)}" 
+        y="${Math.round(height * 0.02)}" 
+        width="${Math.round(watermarkWidth * 0.5)}" 
+        height="${Math.round(watermarkHeight * 0.5)}" 
+        href="data:${logoMimeType};base64,${logoBase64}"
+        opacity="0.4"
+      />
+      <!-- Bottom center (medium, 40% opacity) -->
+      <image 
+        x="${Math.round((width - watermarkWidth * 0.5) / 2)}" 
+        y="${Math.round(height * 0.98 - watermarkHeight * 0.5)}" 
+        width="${Math.round(watermarkWidth * 0.5)}" 
+        height="${Math.round(watermarkHeight * 0.5)}" 
+        href="data:${logoMimeType};base64,${logoBase64}"
+        opacity="0.4"
+      />
+      <!-- Left edge upper (35% opacity) -->
+      <image 
+        x="${Math.round(width * 0.02)}" 
+        y="${Math.round(height * 0.30)}" 
+        width="${Math.round(watermarkWidth * 0.45)}" 
+        height="${Math.round(watermarkHeight * 0.45)}" 
+        href="data:${logoMimeType};base64,${logoBase64}"
+        opacity="0.35"
+      />
+      <!-- Left edge lower (35% opacity) -->
+      <image 
+        x="${Math.round(width * 0.02)}" 
+        y="${Math.round(height * 0.60)}" 
+        width="${Math.round(watermarkWidth * 0.45)}" 
+        height="${Math.round(watermarkHeight * 0.45)}" 
+        href="data:${logoMimeType};base64,${logoBase64}"
+        opacity="0.35"
+      />
+      <!-- Right edge upper (35% opacity) -->
+      <image 
+        x="${Math.round(width * 0.98 - watermarkWidth * 0.45)}" 
+        y="${Math.round(height * 0.30)}" 
+        width="${Math.round(watermarkWidth * 0.45)}" 
+        height="${Math.round(watermarkHeight * 0.45)}" 
+        href="data:${logoMimeType};base64,${logoBase64}"
+        opacity="0.35"
+      />
+      <!-- Right edge lower (35% opacity) -->
+      <image 
+        x="${Math.round(width * 0.98 - watermarkWidth * 0.45)}" 
+        y="${Math.round(height * 0.60)}" 
+        width="${Math.round(watermarkWidth * 0.45)}" 
+        height="${Math.round(watermarkHeight * 0.45)}" 
+        href="data:${logoMimeType};base64,${logoBase64}"
+        opacity="0.35"
       />
     </svg>
   `;
@@ -452,6 +463,22 @@ Format your response as: "[SPECIES] UNIQUE FEATURES: [list the 3-5 most distinct
     
     const generationPrompt = `THIS IS A ${species}. Generate a ${species}. ${notSpecies}
 
+=== CRITICAL: FULLY ANIMAL - NO HUMAN FEATURES ===
+- The ${species} must be 100% ANIMAL - NOT a human-animal hybrid
+- NO human body, NO human posture, NO bipedal stance
+- NO human hands, arms, or humanoid body shape
+- The ${species} has FOUR LEGS/PAWS - natural animal anatomy only
+- Natural animal proportions and body structure
+- The pet is a REAL ${species}, not an anthropomorphic character
+
+=== POSE: REGAL SEATED POSITION ===
+- The ${species} is SEATED majestically on a cushion/throne
+- Front paws/legs visible, resting elegantly
+- Head held high with noble, dignified expression
+- Natural seated animal pose - like a royal pet portrait
+- Full body visible, seated facing slightly toward viewer
+- Proud, regal posture befitting nobility
+
 === THE ${species} - MUST MATCH EXACTLY ===
 ${petDescription}${genderInfo}
 
@@ -465,7 +492,7 @@ COLOR PALETTE - ELEGANT AND REFINED:
 - ACCENT COLORS: Silver threads, white pearls, light blue gems (minimal use)
 - AVOID: Yellow, gold, warm tones - keep palette cool and elegant
 - FABRICS: White ermine fur with black spots, white lace, light blue satin, charcoal velvet
-- JEWELRY: White pearls, silver, light blue sapphires (no gold)
+- JEWELRY: White pearls, silver, light blue sapphires (no gold) - draped around neck naturally
 - Keep colors sophisticated and understated - elegant, not overdone
 
 KEY QUALITIES:
@@ -474,8 +501,9 @@ KEY QUALITIES:
 - Delicate floral embroidery in light blue, white, and silver (no gold)
 - Soft, smooth brushwork with luminous glazing technique
 - Refined color palette - elegant blues, whites, blacks
+- NATURAL ANIMAL BODY - four legs, normal pet anatomy
 
-The ${species} wears ${robe}, sits on ${cushion}, adorned with ${jewelryItem}. ${background}. Bright, flattering light illuminating the subject beautifully. Museum-quality fine art with elegant, refined colors.`;
+The ${species} is SEATED regally on ${cushion}, wearing ${robe} draped over its back, with ${jewelryItem} around its neck. ${background}. ${lighting}. Museum-quality fine art portrait of a noble pet - fully animal, majestic pose.`;
 
     // Generate image with GPT-Image-1 (OpenAI's newest image model)
     console.log("Generating image with gpt-image-1...");
