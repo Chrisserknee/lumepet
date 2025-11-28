@@ -1876,6 +1876,10 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
     // Determine which model to use for generation
     // Priority: OpenAI img2img > Stable Diffusion > Composite > Style Transfer > IP-Adapter > FLUX > GPT-Image-1
     // OpenAI img2img gets highest priority when explicitly enabled
+    // 
+    // CRITICAL: All generation types (free, pack credit, secret credit) use the SAME model selection logic.
+    // The only difference is watermarking - the actual generation is identical for all types.
+    // useSecretCredit and usePackCredit do NOT affect model selection - only watermarking.
     const useOpenAIImg2Img = process.env.USE_OPENAI_IMG2IMG === "true" && process.env.OPENAI_API_KEY;
     const useStableDiffusion = !useOpenAIImg2Img && process.env.USE_STABLE_DIFFUSION === "true" && process.env.REPLICATE_API_TOKEN;
     const useComposite = !useOpenAIImg2Img && !useStableDiffusion && process.env.USE_COMPOSITE === "true" && process.env.REPLICATE_API_TOKEN;
@@ -1910,6 +1914,8 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
       : useFluxModel ? "USE_FLUX_MODEL=true"
       : "No model flags set, using default GPT-Image-1");
     console.log("Generation type:", useSecretCredit ? "SECRET CREDIT (un-watermarked)" : usePackCredit ? "PACK CREDIT (un-watermarked)" : "FREE (watermarked)");
+    console.log("⚠️ IMPORTANT: All generation types (free, pack credit, secret credit) use the SAME model:", modelName);
+    console.log("⚠️ The only difference is watermarking - generation model is identical for all types.");
     console.log("Detected species:", species);
     console.log("Species enforcement:", notSpecies);
     
@@ -2249,6 +2255,8 @@ Generate a refined portrait that addresses ALL corrections and matches the origi
     console.log(`Using ${refinementUsed ? "refined" : "first"} generation for final output`);
 
     // Create preview (watermarked if not using pack credit or secret credit, un-watermarked if using either)
+    // NOTE: The generation model used above is IDENTICAL for all types (free, pack credit, secret credit).
+    // The ONLY difference is watermarking - free gets watermarked, pack/secret get un-watermarked.
     let previewBuffer: Buffer;
     if (usePackCredit || useSecretCredit) {
       // Un-watermarked preview for pack credits or secret credit (testing)
