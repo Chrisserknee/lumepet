@@ -1856,6 +1856,16 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
     const useFluxModel = !useOpenAIImg2Img && !useStableDiffusion && !useComposite && !useStyleTransfer && !useIPAdapter && process.env.USE_FLUX_MODEL === "true" && process.env.REPLICATE_API_TOKEN;
     
     console.log("=== IMAGE GENERATION ===");
+    console.log("Environment check:");
+    console.log("- USE_OPENAI_IMG2IMG:", process.env.USE_OPENAI_IMG2IMG || "not set");
+    console.log("- USE_STABLE_DIFFUSION:", process.env.USE_STABLE_DIFFUSION || "not set");
+    console.log("- USE_COMPOSITE:", process.env.USE_COMPOSITE || "not set");
+    console.log("- USE_STYLE_TRANSFER:", process.env.USE_STYLE_TRANSFER || "not set");
+    console.log("- USE_IP_ADAPTER:", process.env.USE_IP_ADAPTER || "not set");
+    console.log("- USE_FLUX_MODEL:", process.env.USE_FLUX_MODEL || "not set");
+    console.log("- OPENAI_API_KEY:", process.env.OPENAI_API_KEY ? "set" : "not set");
+    console.log("- REPLICATE_API_TOKEN:", process.env.REPLICATE_API_TOKEN ? "set" : "not set");
+    
     const modelName = useOpenAIImg2Img ? "OpenAI img2img (images.edit)"
       : useStableDiffusion ? "Stable Diffusion SDXL (full generation)"
       : useComposite ? "Composite (segment + scene + blend)"
@@ -1864,6 +1874,13 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
       : useFluxModel ? "FLUX (img2img)" 
       : "GPT-Image-1 (OpenAI)";
     console.log("Model selected:", modelName);
+    console.log("Selection reason:", useOpenAIImg2Img ? "USE_OPENAI_IMG2IMG=true" 
+      : useStableDiffusion ? "USE_STABLE_DIFFUSION=true"
+      : useComposite ? "USE_COMPOSITE=true"
+      : useStyleTransfer ? "USE_STYLE_TRANSFER=true"
+      : useIPAdapter ? "USE_IP_ADAPTER=true"
+      : useFluxModel ? "USE_FLUX_MODEL=true"
+      : "No model flags set, using default GPT-Image-1");
     console.log("Generation type:", useSecretCredit ? "SECRET CREDIT (un-watermarked)" : usePackCredit ? "PACK CREDIT (un-watermarked)" : "FREE (watermarked)");
     console.log("Detected species:", species);
     console.log("Species enforcement:", notSpecies);
