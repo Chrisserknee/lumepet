@@ -1345,13 +1345,17 @@ export async function POST(request: NextRequest) {
               text: `CRITICAL FIRST STEP: Identify the SPECIES. Start your response with EXACTLY one of these: [CAT] or [DOG] or [RABBIT]
 
 SPECIES IDENTIFICATION RULES (MUST BE ACCURATE):
-- DOG: Has a snout/muzzle, floppy or pointed ears, canine facial structure, typically larger nose, wider head
-- CAT: Has whiskers, pointed triangular ears, smaller nose, more compact facial structure, feline features
+- DOG: Has a prominent snout/muzzle, canine facial structure, typically larger/wider nose, wider head, canine teeth visible, dog-like facial proportions
+- CAT: Has whiskers, smaller triangular nose, more compact facial structure, feline features, cat-like eye shape, smaller nose relative to face, cat-like facial proportions
 - RABBIT: Long ears, round body, no snout like a dog, different facial structure
 
 LOOK CAREFULLY: Examine the facial structure, ear shape, nose size, and overall anatomy to determine if this is a DOG or CAT.
 
-Start your response with [DOG] or [CAT] or [RABBIT] - this is CRITICAL for accurate generation.
+KEY DIFFERENCES:
+- CATS have smaller noses, more compact faces, whiskers, triangular ears, feline eye shape
+- DOGS have larger noses/snouts, wider heads, canine facial structure, dog-like proportions
+
+Start your response with [DOG] or [CAT] or [RABBIT] - this is CRITICAL for accurate generation. Be very careful - misidentifying a cat as a dog or vice versa will cause major errors.
 
 === BREED IDENTIFICATION (CRITICAL) ===
 Identify the specific breed with confidence level:
@@ -1548,13 +1552,22 @@ Format: "[SPECIES] AGE: [stage]. BREED: [breed] (CONFIDENCE: [level]). IDENTITY 
             content: [
               {
                 type: "text",
-                text: `Look at this image carefully. Is this a DOG or a CAT? 
+                text: `Look at this image VERY CAREFULLY. Is this a DOG or a CAT?
+
+CRITICAL - Examine these features:
+- NOSE SIZE: Dogs have larger/wider noses (snouts). Cats have smaller, more compact noses.
+- FACIAL STRUCTURE: Dogs have wider heads and canine facial proportions. Cats have more compact, triangular faces.
+- EARS: Both can have pointed ears, but look at the overall facial structure.
+- WHISKERS: Cats typically have more prominent whiskers.
+- EYE SHAPE: Cats often have more almond-shaped eyes. Dogs have rounder eyes.
 
 Key differences:
-- DOG: Has a snout/muzzle, canine facial structure, typically wider head
-- CAT: Has whiskers, smaller nose, more compact face, feline features
+- DOG: Larger snout/muzzle, wider head, canine facial structure, dog-like proportions
+- CAT: Smaller nose, compact face, triangular face shape, feline features, prominent whiskers
 
-Respond with ONLY one word: DOG or CAT`,
+Respond with ONLY one word: DOG or CAT
+
+Be VERY careful - misidentifying will cause major errors.`,
               },
               {
                 type: "image_url",
@@ -1570,10 +1583,12 @@ Respond with ONLY one word: DOG or CAT`,
         temperature: 0, // Use deterministic response
       });
       const validatedSpecies = speciesValidationCheck.choices[0]?.message?.content?.trim().toUpperCase();
+      
+      // CRITICAL: Always use validation result if it's clear
       if (validatedSpecies === "DOG" || validatedSpecies === "CAT") {
-        // If validation differs from initial detection, use validation result
+        // If validation differs from initial detection, ALWAYS use validation result
         if (validatedSpecies !== species) {
-          console.warn(`⚠️ SPECIES MISMATCH: Initial detection was ${species}, but validation says ${validatedSpecies}. Using validated species.`);
+          console.warn(`⚠️ SPECIES MISMATCH: Initial detection was ${species}, but validation says ${validatedSpecies}. FORCING validated species.`);
           species = validatedSpecies;
         } else {
           console.log(`✅ Species validation confirmed: ${species}`);
@@ -1585,15 +1600,28 @@ Respond with ONLY one word: DOG or CAT`,
           console.log(`✅ Species set via validation: ${species}`);
         }
       }
+      
+      // CRITICAL: If validation failed but we have a species, log warning but continue
+      if (!validatedSpecies || (validatedSpecies !== "DOG" && validatedSpecies !== "CAT")) {
+        console.warn(`⚠️ Species validation returned unclear result: "${validatedSpecies}". Using detected species: ${species}`);
+      }
     } catch (validationError) {
       console.error("⚠️ Species validation check failed:", validationError);
-      // Continue with existing species detection
+      // If validation fails, we MUST have a species from initial detection
+      if (!species || species === "PET") {
+        throw new Error("CRITICAL: Unable to determine pet species. Please ensure the image clearly shows a cat or dog.");
+      }
+      console.warn(`⚠️ Continuing with detected species: ${species} (validation failed)`);
     }
     
-    // Final fallback: if species is still unclear, use image analysis fallback
+    // CRITICAL: Final check - we MUST have a valid species
     if (!species || species === "PET") {
-      console.warn("⚠️ Species still unclear after validation, using fallback analysis");
-      // This should rarely happen now, but keep as safety net
+      throw new Error("CRITICAL: Unable to determine pet species. Please ensure the image clearly shows a cat or dog.");
+    }
+    
+    // CRITICAL: Ensure species is either DOG or CAT (most common)
+    if (species !== "DOG" && species !== "CAT") {
+      console.warn(`⚠️ Unusual species detected: ${species}. Proceeding but may need special handling.`);
     }
     
     console.log("Detected age/stage:", ageStage);
@@ -1901,7 +1929,14 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
         ? petDescription.substring(0, 200) + "..."
         : petDescription;
       
-      const openAIImg2ImgPrompt = `DO NOT change the ${species} at all - keep it exactly as shown. Preserve the face, body, markings, colors, fur pattern, eye color, ear shape, nose, and expression exactly from the original image. Only modify the background and add: a silk cape draped over the ${species}'s back (not clothing, just draped fabric), gold jewelry around the neck, and a cushion beneath. Transform only the background into a Renaissance painting style. The ${species} itself must remain completely unchanged and identical to the original photo.`;
+      // CRITICAL: Explicitly state the species multiple times to prevent wrong animal generation
+      const speciesEnforcement = species === "CAT" 
+        ? "CRITICAL: This is a CAT. Generate ONLY a CAT. DO NOT generate a dog. This MUST be a CAT."
+        : species === "DOG"
+        ? "CRITICAL: This is a DOG. Generate ONLY a DOG. DO NOT generate a cat. This MUST be a DOG."
+        : `CRITICAL: This is a ${species}. Generate ONLY a ${species}.`;
+      
+      const openAIImg2ImgPrompt = `${speciesEnforcement} DO NOT change the ${species} at all - keep it exactly as shown in the original image. This is a ${species}, not any other animal. Preserve the face, body, markings, colors, fur pattern, eye color, ear shape, nose, and expression exactly from the original image. Only modify the background and add: a silk cape draped over the ${species}'s back (not clothing, just draped fabric), gold jewelry around the neck, and a cushion beneath. Transform only the background into a Renaissance painting style. The ${species} itself must remain completely unchanged and identical to the original photo. Remember: this is a ${species}.`;
       
       // Process the original image buffer for OpenAI
       const processedForOpenAI = await sharp(buffer)
