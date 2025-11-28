@@ -116,8 +116,8 @@ export default function Hero({ onUploadClick }: HeroProps) {
             }}
           >
             <img 
-              src="/samples/blackcat.png" 
-              alt="Royal Black Cat portrait"
+              src="/samples/whitecat.png" 
+              alt="Majestic White Cat portrait"
               className="w-full h-full object-cover rounded-lg"
             />
           </div>
