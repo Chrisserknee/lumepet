@@ -26,7 +26,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
   }, []);
 
   return (
-    <section className="min-h-[85vh] flex flex-col items-center justify-center px-4 sm:px-6 py-6 sm:py-10 relative overflow-hidden w-full">
+    <section className="min-h-[85vh] flex flex-col items-center justify-center px-4 sm:px-6 pt-2 sm:pt-4 pb-6 sm:pb-10 relative overflow-hidden w-full">
       {/* Decorative elements */}
       <div 
         className="absolute top-20 left-10 w-32 h-32 rounded-full blur-3xl" 
@@ -60,8 +60,8 @@ export default function Hero({ onUploadClick }: HeroProps) {
               <Image
                 src="/samples/LumePet2.png"
                 alt="LumePet Logo"
-                width={90}
-                height={90}
+                width={120}
+                height={120}
                 className="object-contain animate-float"
                 priority
               />
