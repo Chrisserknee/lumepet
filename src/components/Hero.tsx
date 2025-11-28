@@ -83,7 +83,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
         >
           Turn your pet into a{" "}
           <span className="relative" style={{ color: '#C5A572' }}>
-            royal
+            beautiful portrait
             <svg 
               className="absolute -bottom-2 left-0 w-full h-3" 
               style={{ color: 'rgba(139, 58, 66, 0.6)' }} 
@@ -93,7 +93,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
               <path d="M0 6 Q50 0, 100 6 T200 6" stroke="currentColor" strokeWidth="3" fill="none"/>
             </svg>
           </span>{" "}
-          masterpiece.
+          you&apos;ll cherish forever.
         </h1>
 
         {/* Subheadline */}
