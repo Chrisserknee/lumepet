@@ -1877,76 +1877,14 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
       console.log("📌 Transforming pet photo directly into Renaissance portrait");
       
       // Create a focused prompt for OpenAI img2img
-      // OpenAI's images.edit works best with clear, concise instructions
-      // Enhanced for maximum identity preservation and elegant cape/robe styling
-      const openAIImg2ImgPrompt = `Transform this ${species} into a majestic royal Renaissance oil painting portrait.
-
-CRITICAL - MAXIMUM IDENTITY PRESERVATION (MOST IMPORTANT):
-- The ${species} MUST look EXACTLY like the original photo - this is the #1 priority
-- Match the original photo as closely as possible - same face, same markings, same colors, same expression
-- Preserve EVERY distinctive feature: exact eye shape, exact eye color, exact ear position and shape, exact nose shape and color, exact muzzle length and proportions
-- Keep ALL markings in their EXACT same locations - if there's a white patch on the left cheek in the original, it MUST be on the left cheek in the portrait
-- Maintain the exact fur pattern, colors, and textures from the original photo
-- Preserve the pet's unique expression and "look" - this is what makes them recognizable to their owner
-- The facial structure must match perfectly - skull shape, snout proportions, eye spacing, ear size and position
-- Match the exact body proportions and pose from the original photo
-- DO NOT change the pet's appearance in ANY way - only add artistic styling (cape, jewelry, background) around them
-- The pet's face, body, markings, and colors should be IDENTICAL to the original photo
-- The owner should instantly recognize this as THEIR pet - it should look like the same animal
-- Study the original photo carefully and replicate every detail of the ${species}'s appearance
-
-STYLING - ELEGANT CAPE/ROBE (NOT HUMAN CLOTHES):
-- A luxurious cape or robe DRAPED elegantly over the ${species}'s shoulders and back - NOT worn like human clothing
-- NO human clothing items - NO sleeves, NO buttons, NO human-style garments
-- Just elegant fabric draped naturally over the animal's body, following their natural shape
-- The cape/robe should be ${robe.toLowerCase().replace('wearing', 'draped').replace('wearing', 'draped')}
-- Rich, silky fabric with a smooth, lustrous sheen - like silk satin or velvet
-- The fabric should have a SILKY, SMOOTH texture - you can see the lustrous sheen and silky quality
-- Soft folds and drapes that follow the ${species}'s natural body shape
-- White ermine fur trim with black spots along the edges for regal elegance
-- The fabric should look luxurious and expensive - silky, smooth, with subtle highlights showing the silky texture
-- The silky feel should be visible - smooth, lustrous, luxurious
-
-JEWELRY - DELICATE AND ELEGANT:
-- ${jewelryItem.toLowerCase()} around the neck
-- Gold chains with gemstones or pearls - elegant, not heavy
-- Should complement the ${species} without overwhelming them
-
-COMPOSITION AND POSE:
-- Seated or reclining regally on ${cushion.toLowerCase()}
-- Natural animal pose - NOT human-like posture
-- Show the ${species}'s full body from ears to paws
-- ${background.toLowerCase()}
-- ${lighting.toLowerCase()}
-- The ${species} should look dignified and noble, but still clearly an animal
-
-FABRIC TEXTURE AND COLOR (SILKY FEEL IS CRITICAL):
-- The fabric MUST have a SILKY, SMOOTH, LUSTROUS texture - this is essential
-- You should be able to SEE the silky quality - smooth, lustrous sheen, luxurious feel
-- Rich, saturated colors: deep emerald greens, cream/ivory whites, rich burgundy reds, royal blues, golden-olive greens
-- The fabric should have depth and dimension - you can see the silky texture and smooth surface
-- Soft highlights that show the fabric's smooth, silky quality - the light should reflect off the silky surface
-- Colors should be rich and beautiful - jewel tones and luxurious neutrals
-- The silky feel should be visible in the painting - smooth, lustrous, luxurious fabric
-- The cape/robe should look like expensive silk or velvet with a silky, smooth surface
-
-PAINTING STYLE:
-- Classical Flemish/Dutch Golden Age oil painting technique
-- Visible brushstrokes creating rich impasto texture
-- Luminous glazing technique for depth and richness
-- Old master style like Rembrandt, Van Dyck, or Gainsborough
-- Museum-quality fine art portrait
-- Rich, painterly surface - NOT photographic
-- Soft, dramatic lighting that highlights the ${species} and luxurious fabrics
-
-CRITICAL REMINDERS:
-- The ${species} must be instantly recognizable as the same pet from the original photo
-- NO human clothing - only elegant draped fabrics
-- Silky, luxurious fabric feel with rich colors
-- Natural animal pose - dignified but clearly an animal
-- Preserve EVERY detail from the original photo
-
-Transform this pet photo into a Renaissance royal portrait while keeping the ${species}'s appearance EXACTLY as shown in the original image.`;
+      // OpenAI's images.edit works best with SHORT, CLEAR instructions
+      // Priority: preserve pet identity first, then add minimal styling
+      // Extract key identifying features from description for better preservation
+      const keyFeatures = petDescription.length > 200 
+        ? petDescription.substring(0, 200) + "..."
+        : petDescription;
+      
+      const openAIImg2ImgPrompt = `DO NOT change the ${species} at all - keep it exactly as shown. Preserve the face, body, markings, colors, fur pattern, eye color, ear shape, nose, and expression exactly from the original image. Only modify the background and add: a silk cape draped over the ${species}'s back (not clothing, just draped fabric), gold jewelry around the neck, and a cushion beneath. Transform only the background into a Renaissance painting style. The ${species} itself must remain completely unchanged and identical to the original photo.`;
       
       // Process the original image buffer for OpenAI
       const processedForOpenAI = await sharp(buffer)
