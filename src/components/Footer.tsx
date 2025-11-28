@@ -22,7 +22,7 @@ export default function Footer({ onContactClick }: FooterProps) {
               }}
             >
               <Image
-                src="/samples/lumepet.png"
+                src="/samples/LumePet2.png"
                 alt="LumePet Logo"
                 width={40}
                 height={40}

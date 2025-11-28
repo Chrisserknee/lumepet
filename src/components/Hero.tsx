@@ -58,7 +58,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
               }}
             >
               <Image
-                src="/samples/lumepet.png"
+                src="/samples/LumePet2.png"
                 alt="LumePet Logo"
                 width={100}
                 height={100}
@@ -142,7 +142,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
         <div className="flex justify-center items-center gap-3 sm:gap-6 mb-8 sm:mb-10 animate-fade-in-up delay-300">
           {/* First Portrait Frame */}
           <div 
-            className="w-36 h-44 sm:w-52 sm:h-64 md:w-64 md:h-80 transform -rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative flex-shrink-0"
+            className="w-40 h-48 sm:w-52 sm:h-64 md:w-64 md:h-80 transform -rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative flex-shrink-0"
             style={{ 
               padding: '2px',
             }}
@@ -215,7 +215,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
 
           {/* Second Portrait Frame */}
           <div 
-            className="w-36 h-44 sm:w-52 sm:h-64 md:w-64 md:h-80 transform rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative flex-shrink-0"
+            className="w-40 h-48 sm:w-52 sm:h-64 md:w-64 md:h-80 transform rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative flex-shrink-0"
             style={{ 
               padding: '2px',
             }}

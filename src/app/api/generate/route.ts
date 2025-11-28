@@ -93,7 +93,7 @@ async function generateWithFlux(
 }
 
 // Generate image using OpenAI img2img (images.edit) for primary generation
-// This uses OpenAI's image editing API to transform the pet photo into a Renaissance portrait
+// This uses OpenAI's image editing API to transform the pet photo into a late 18th-century aristocratic portrait
 async function generateWithOpenAIImg2Img(
   imageBuffer: Buffer,
   prompt: string,
@@ -181,7 +181,7 @@ async function generateWithIPAdapter(
           prompt: prompt,
           image: imageDataUrl,
           scale: ipAdapterScale,
-          negative_prompt: "deformed, distorted, disfigured, poorly drawn, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, mutated hands and fingers, disconnected limbs, mutation, mutated, ugly, disgusting, blurry, amputation, human face, human body, humanoid",
+          negative_prompt: "deformed, distorted, disfigured, poorly drawn, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, mutated hands and fingers, disconnected limbs, mutation, mutated, ugly, disgusting, blurry, amputation, human face, human body, humanoid, dark, gloomy, shadowy, muted colors, dull colors",
           num_outputs: 1,
           num_inference_steps: 30,
           guidance_scale: 7.5,
@@ -259,8 +259,8 @@ async function applyStyleTransfer(
       {
         input: {
           image: contentImageUrl,
-          prompt: "oil painting portrait, Renaissance masterpiece style, classical fine art, visible brushstrokes, rich impasto texture, warm golden lighting, museum quality painting, Rembrandt style, dramatic chiaroscuro, luminous glazing technique",
-          negative_prompt: "photograph, photo, realistic, modern, digital art, cartoon, anime, blurry, low quality, watermark",
+          prompt: "oil painting portrait, late 18th-century European aristocratic style (1770-1830), Georgian Regency Napoleonic era portraiture, classical fine art, LONG FLOWING visible brushstrokes, elongated brushwork, rich impasto texture, BRIGHT warm golden lighting, BRIGHTER overall illumination, DEEP RICH SATURATED luminous colors, rich jewel tones, SILKY LUSTROUS fabrics with visible sheen, PURE BRIGHT WHITE highlights, SUBTLE LUMINOUS GLOW throughout, gentle radiance and brightness, hand-painted charm with slight imperfections, elegant AIRY NOT gloomy, DEEP RICH SATURATED colors, DARKER TONES retained in shadows and background for depth, SPACIOUS background with DEPTH, luminous glazing technique, BRIGHT and beautiful, BRIGHTER illumination, subject GLOWS with BRIGHT warm light, fabrics GLOW with DEEP RICH color, preserve deep blacks rich and intact, slightly soft edges painterly, Gainsborough Reynolds Vigée Le Brun style",
+          negative_prompt: "photograph, photo, realistic, modern, digital art, cartoon, anime, blurry, low quality, watermark, gloomy, overly dark, dark background, muted colors, dull colors, dark colors, short brushstrokes, grey whites, muddy whites, too perfect, clinical, sharp edges everywhere, flat background, medieval, Renaissance, matte fabrics, non-silky textures, human clothing, sleeves, buttons, tailored garments, human-like pose, anthropomorphic, human posture",
           prompt_strength: styleStrength,
           num_inference_steps: 25,
           guidance_scale: 7.5,
@@ -334,7 +334,7 @@ async function applyStyleTransfer(
 }
 
 // Full Stable Diffusion generation using SDXL img2img
-// This uses moderate denoising to create a beautiful Renaissance portrait
+// This uses moderate denoising to create a beautiful late 18th-century aristocratic portrait
 // while preserving the pet's key identity features from the reference image
 async function generateWithStableDiffusion(
   contentImageBase64: string,
@@ -375,7 +375,7 @@ async function generateWithStableDiffusion(
   const breedInfo = breed ? `${breed} ${species.toLowerCase()}` : species.toLowerCase();
   
   // Create a detailed prompt that describes both the pet and the desired style
-  const sdPrompt = `A majestic royal Renaissance oil painting portrait of a ${breedInfo}, seated regally on a luxurious velvet cushion.
+  const sdPrompt = `A majestic royal late 18th-century European aristocratic oil painting portrait of a ${breedInfo}, seated regally on a luxurious velvet cushion. Georgian/Regency/Napoleonic era style (1770-1830).
 
 SUBJECT - THIS SPECIFIC ${species.toUpperCase()}:
 The ${species.toLowerCase()} has the exact features from the reference image - preserve the face structure, eye color, markings, and unique characteristics.
@@ -384,34 +384,52 @@ STYLE AND SETTING:
 - Classical Flemish/Dutch Golden Age oil painting style
 - Rich impasto brushstrokes, visible paint texture
 - Luminous glazing technique with depth
-- Warm golden Renaissance lighting from the left
+- Warm golden late 18th-century portrait lighting from the left
 - Elegant palace interior background with rich colors
 
 ROYAL ATTIRE:
-- Luxurious velvet robe in deep jewel tones (burgundy, navy, forest green)
-- White ermine fur trim with black spots
-- Elegant pearl necklace with gemstone pendant
-- Delicate lace collar or ruff
-- Rich embroidery with gold thread accents
+- Dainty delicate velvet cloak in sapphire blue, ruby red, cream, or white - soft plush velvety texture
+- Gold thread embroidery patterns throughout
+- Ermine-style white fur trim with black spots
+- Dainty delicate fabric with soft plush velvety texture draped delicately over body
+- Dainty antique jewelry: gem clusters (ruby, emerald, amethyst, topaz), gold filigree, small pearls, multi-chain necklaces
+- NOT modern jewelry, NOT simple beads
 
 COMPOSITION:
-- Full body portrait showing the entire ${species.toLowerCase()}
-- Seated majestically, all four paws visible
+- Subject LOW and CENTRAL on velvet throne cushion
+- Body ¾ view, head forward - late 18th-century aristocratic portrait posture
+- Front paws visible, resting on cushion
+- Cloak draped over body + cushion with realistic folds
+- Medium close-up: chest to top of head
 - Noble, dignified expression
-- Well-lit, bright and beautiful
-- Museum masterpiece quality
 
-COLOR PALETTE:
-- Rich jewel tones: deep reds, royal blues, emerald greens
-- Warm golds and creams
-- Bright, luminous - not dark or gloomy
-- Classical oil painting richness`;
+BACKGROUND:
+- Deep dark gradient: black → espresso → deep olive (soft painterly, NOT uniform)
+- Large draped fabrics behind: heavy velvet/brocade in burgundy, crimson, deep purple
+- Visible folds, shadows, texture
+- ZERO modern elements - late 18th-century aristocratic portrait studio only
+
+LIGHTING (18th-19th Century Style):
+- Single warm key light from upper left/front
+- Soft dramatic chiaroscuro: deep shadows, strong highlights
+- Sculpted fur texture, background falls into darkness
+- Warm golden rim highlights around pet
+
+RENDERING:
+- TRUE OIL PAINTING: LONG FLOWING visible brush strokes, thick layered pigments
+- ELONGATED brushwork - longer strokes for painterly effect
+- BRIGHT highlights throughout
+- BRIGHTER overall illumination - well-lit subject
+- High detail but NOT photorealistic
+- Late 18th-century aristocratic portrait feel (1770-1830)
+- NOT digital, NOT airbrushed, NOT smooth
+- NOT Renaissance - specifically Georgian/Regency/Napoleonic era`;
 
   const negativePrompt = `photograph, photo, photorealistic, modern, digital art, cartoon, anime, 3d render, 
 blurry, low quality, watermark, text, logo, 
 human body, humanoid, anthropomorphic, bipedal, 
 wrong species, different animal, 
-dark, gloomy, shadowy, muddy colors,
+dark, gloomy, shadowy, muddy colors, muted colors, dull colors,
 deformed, disfigured, bad anatomy, wrong proportions,
 ugly, duplicate, extra limbs, missing limbs`;
   
@@ -554,30 +572,31 @@ async function generateRoyalScene(
 ): Promise<Buffer> {
   console.log("=== GENERATING ROYAL SCENE ===");
   
-  const scenePrompt = `A luxurious Victorian royal portrait scene with rich jewel tones and ornate details, empty and ready for a pet to be placed.
+  const scenePrompt = `A luxurious Victorian royal portrait scene with bright vibrant jewel tones and ornate details, empty and ready for a pet to be placed.
 
 SCENE ELEMENTS:
-- Plush TEAL/TURQUOISE velvet cushion with intricate GOLD EMBROIDERY and gold tassel, positioned in foreground
-- Sumptuous DEEP RED/BURGUNDY velvet royal robe with ornate GOLD FILIGREE trim, draped elegantly
-- Delicate PEARL NECKLACE with large RUBY pendant in diamond setting, displayed on cushion
+- Plush BRIGHT TEAL/TURQUOISE velvet cushion with intricate GOLD EMBROIDERY and gold tassel, positioned in foreground
+- Sumptuous BRIGHT DEEP RED/BURGUNDY velvet royal robe with ornate GOLD FILIGREE trim, draped elegantly
+- Dainty delicate PEARL NECKLACE with small bright colorful gemstone pendant (vibrant rubies, emeralds, sapphires), displayed on cushion
 - Cream/ivory RUFFLED LACE COLLAR (Elizabethan ruff style) ready to frame a pet's neck
-- DARK GREEN velvet curtain draped on one side for depth
-- Rich warm GOLDEN-OLIVE background with soft painterly gradient
+- BRIGHT DEEP GREEN velvet curtain draped on one side for depth
+- Rich warm BRIGHT GOLDEN-OLIVE background with soft painterly gradient, luminous and vibrant
 
 COLORS (IMPORTANT):
-- Teal/turquoise velvet cushion
-- Deep burgundy/crimson red robe  
+- Bright vibrant teal/turquoise velvet cushion
+- Bright deep burgundy/crimson red robe  
 - Gold embroidery and trim throughout
-- Dark forest green curtain accent
-- Warm golden background
+- Bright deep forest green curtain accent
+- Warm bright golden background
 - Cream/ivory lace details
-- Pearl white and ruby red jewelry
+- Pearl white and bright colorful gemstone jewelry (vibrant rubies, emeralds, sapphires)
+- Preserve deep blacks rich and intact where they exist
 
 LIGHTING:
-- Warm, golden Renaissance lighting
-- Soft and elegant, not harsh
+- Bright warm, golden late 18th-century portrait lighting
+- Luminous and vibrant, not harsh
 - Gentle shadows for depth
-- Rich and inviting atmosphere
+- Rich, bright, and inviting atmosphere
 
 STYLE:
 - Classical Flemish/Dutch Golden Age oil painting
@@ -589,7 +608,7 @@ IMPORTANT:
 - Leave clear space in center for a pet to be composited
 - No animals or people in the scene
 - The cushion and robe should be arranged for a pet to appear seated/resting
-- Make it look like a real old master painting`;
+- Make it look like a real late 18th-century aristocratic portrait painting (Gainsborough, Reynolds, Vigée Le Brun style)`;
 
   console.log("Generating scene with GPT-Image-1...");
   
@@ -870,8 +889,8 @@ Format your response as structured data that can be used to ensure the generated
         ],
       },
     ],
-    max_tokens: 1200,
-    temperature: 0.1, // Low temperature for consistent, precise analysis
+    max_tokens: 2000, // Increased for enhanced detailed facial structure analysis
+    temperature: 0.05, // Very low temperature for extremely consistent, precise analysis
   });
   
   const facialAnalysis = facialAnalysisResponse.choices[0]?.message?.content || "";
@@ -1036,7 +1055,7 @@ async function createWatermarkedImage(inputBuffer: Buffer): Promise<Buffer> {
   // Load LumePet logo from public folder
   const fs = await import("fs");
   const path = await import("path");
-  const logoPath = path.join(process.cwd(), "public", "samples", "lumepet.png");
+  const logoPath = path.join(process.cwd(), "public", "samples", "LumePet2.png");
   
   let logoBuffer: Buffer;
   try {
@@ -1370,65 +1389,97 @@ Identify the specific breed with confidence level:
 - ADULT: Fully developed features, mature proportions
 
 === SECTION 1 - IDENTITY MARKERS (MOST CRITICAL) ===
-List 7-10 distinctive features that would allow someone to RECOGNIZE this specific pet:
+List 10-15 distinctive features that would allow someone to RECOGNIZE this specific pet:
 - Asymmetrical features with EXACT locations (e.g., "slightly larger left ear")
 - Unique markings with PRECISE positions (e.g., "white blaze starting 2cm above nose, widening to 3cm between eyes")
 - The pet's characteristic expression or "look in their eyes"
 - Any scars, notches, or physical quirks
 - What makes THIS pet different from other pets of the same breed
+- Subtle facial asymmetries (e.g., "left eye slightly more almond-shaped than right")
+- Unique whisker patterns or arrangements
+- Individual hair patterns or cowlicks
+- Specific texture variations in fur (e.g., "slightly wavier fur on left side")
+- Any distinctive body proportions or postural characteristics
 
-=== SECTION 2 - FACIAL STRUCTURE (NUMERIC PROPORTIONS) ===
-Provide SPECIFIC measurements and ratios:
+=== SECTION 2 - FACIAL STRUCTURE (NUMERIC PROPORTIONS - ENHANCED) ===
+Provide SPECIFIC measurements and ratios with FINER DETAIL:
 - Skull type: Brachycephalic (flat-faced), Mesocephalic (medium), or Dolichocephalic (long)
 - Face width-to-height ratio (e.g., "face is 85% as wide as tall")
 - Snout length as percentage of head (e.g., "snout is 30% of total head length")
-- Eye shape: Round, Almond, Oval, or Triangular
+- Snout width relative to head width (e.g., "snout is 45% of head width at widest point")
+- Snout taper: Does it narrow significantly toward nose or maintain width?
+- Eye shape: Round, Almond, Oval, or Triangular - describe subtle variations
 - Eye size relative to face (e.g., "eyes take up 15% of face width each")
+- Eye depth: Deep-set, flush, or prominent?
 - Eye spacing in eye-widths (e.g., "eyes are 1.5 eye-widths apart")
-- Eye angle: Horizontal, upward slant, or downward slant
+- Eye angle: Horizontal, upward slant, or downward slant - measure angle if visible
 - Eye color: Use PRECISE color (amber honey, dark chocolate, bright emerald, ice blue, heterochromia details)
+- Eye color variations: Any flecks, rings, or gradients within the iris?
 - Nose size relative to face width (e.g., "nose is 20% of face width")
-- Nose color and any unique patterns
+- Nose shape: Round, oval, triangular, or square?
+- Nose color and any unique patterns or pigmentation variations
 - Muzzle length category: Very short (<15%), Short (15-25%), Medium (25-35%), Long (>35%)
+- Muzzle shape: Square, rounded, pointed, or tapered?
+- Cheekbone prominence: High, medium, or low?
+- Jawline definition: Strong, moderate, or soft?
 
-=== SECTION 3 - EARS (WITH PROPORTIONS) ===
+=== SECTION 3 - EARS (WITH PROPORTIONS - ENHANCED) ===
 - Ear size as percentage of head height (e.g., "ears are 35% of head height")
-- Ear shape: Pointed, Rounded, Rose, Button, Drop/Pendant, Folded
-- Ear set: High/Medium/Low on head
-- Ear spacing: Close together, Normal, Wide apart
-- Ear carriage: Erect, Semi-erect, Folded forward, Drooping
+- Ear width relative to length (e.g., "ears are 60% as wide as tall")
+- Ear shape: Pointed, Rounded, Rose, Button, Drop/Pendant, Folded - describe exact shape
+- Ear tip shape: Sharp point, rounded, or slightly folded?
+- Ear set: High/Medium/Low on head - measure distance from top of head
+- Ear spacing: Close together, Normal, Wide apart - measure relative to head width
+- Ear carriage: Erect, Semi-erect, Folded forward, Drooping - describe exact angle
+- Ear thickness: Thin, medium, or thick?
 - Any ear markings, color variations, or asymmetry
+- Inner ear color and texture
+- Ear hair patterns or tufts
 
-=== SECTION 4 - COLORING (EXHAUSTIVE DETAIL) ===
+=== SECTION 4 - COLORING (EXHAUSTIVE DETAIL - ENHANCED) ===
 Primary coat color using EXACT shade comparisons:
 - Base color (e.g., "rich mahogany brown like polished wood" not just "brown")
 - Secondary colors and their precise locations
 - Color gradients with transition points (e.g., "darkens from golden to russet starting at shoulder line")
+- Subtle color shifts or undertones (e.g., "warm golden undertones in sunlight")
+- Color intensity variations across body (e.g., "darker on back, lighter on chest")
 
-Markings map - describe EVERY marking:
+Markings map - describe EVERY marking with FINER DETAIL:
 - Location using clock positions for face (e.g., "white patch at 2 o'clock position on left cheek")
 - Size estimates (e.g., "approximately 2cm diameter")
 - Shape description (e.g., "irregular star shape", "perfect circle", "lightning bolt")
+- Edge definition: Sharp edges, soft/blended edges, or feathered edges?
 - Any symmetry or asymmetry in markings
+- Marking color intensity: Pure white, cream, or off-white?
+- Multiple layers of markings: Base color, secondary markings, tertiary accents
 
 Pattern type if applicable:
-- Tabby (mackerel, classic, spotted, ticked)
-- Bicolor, tricolor, tortoiseshell, calico
-- Merle, brindle, sable, tuxedo
-- Specific pattern placement
+- Tabby (mackerel, classic, spotted, ticked) - describe stripe/spot width and spacing
+- Bicolor, tricolor, tortoiseshell, calico - describe color distribution percentages
+- Merle, brindle, sable, tuxedo - describe pattern density and distribution
+- Specific pattern placement with measurements
+- Pattern clarity: Bold and distinct, or subtle and blended?
 
-=== SECTION 5 - FUR/COAT TEXTURE ===
-- Length: Very short, Short, Medium, Long, Very long
+=== SECTION 5 - FUR/COAT TEXTURE (ENHANCED) ===
+- Length: Very short, Short, Medium, Long, Very long - measure longest hairs
 - Texture: Sleek/smooth, Soft/plush, Fluffy, Wiry, Curly, Double-coat
-- Density: Sparse, Normal, Dense, Very thick
-- Shine level: Matte, Slight sheen, Glossy
+- Density: Sparse, Normal, Dense, Very thick - estimate hairs per square cm
+- Shine level: Matte, Slight sheen, Glossy - describe reflectivity
 - Any variations in different body areas (e.g., "longer fur around neck forming mane")
+- Fur direction patterns: Whorls, cowlicks, or directional flow
+- Undercoat presence: None, light, moderate, or heavy
+- Guard hair characteristics: Coarse, fine, or mixed?
+- Fur texture variations: Smooth on head vs. coarser on back?
 
-=== SECTION 6 - EXPRESSION AND PERSONALITY ===
+=== SECTION 6 - EXPRESSION AND PERSONALITY (ENHANCED) ===
 - Eye expression: Alert, Soft, Intense, Playful, Wise, Mischievous
+- Eye openness: Wide open, half-closed, or squinting?
 - Resting face characteristics
 - Any distinctive "look" this pet has
 - The emotional quality that makes this pet recognizable
+- Facial muscle tension: Relaxed, alert, or tense?
+- Mouth expression: Neutral, slight smile, or serious?
+- Overall demeanor: Confident, shy, curious, or regal?
 
 Format: "[SPECIES] AGE: [stage]. BREED: [breed] (CONFIDENCE: [level]). IDENTITY MARKERS: [7-10 specific features]. FACIAL STRUCTURE: [numeric proportions]. EARS: [detailed ear description]. COLORING: [exhaustive color mapping]. FUR: [texture details]. EXPRESSION: [personality indicators]."`,
             },
@@ -1442,8 +1493,8 @@ Format: "[SPECIES] AGE: [stage]. BREED: [breed] (CONFIDENCE: [level]). IDENTITY 
           ],
         },
       ],
-      max_tokens: 1500, // Increased for more detailed analysis
-      temperature: 0.2, // Lower temperature for consistent, precise descriptions
+      max_tokens: 2500, // Significantly increased for enhanced detailed analysis
+      temperature: 0.1, // Lower temperature for even more consistent, precise descriptions
     });
 
     let petDescription = visionResponse.choices[0]?.message?.content || "a beloved pet";
@@ -1673,65 +1724,113 @@ Be VERY careful - misidentifying will cause major errors.`,
 
     // Randomize elements for unique paintings - elegant palette: light blues, blacks, whites
     const cushions = [
-      "RICH EMERALD GREEN silk velvet cushion with gold braided trim and decorative gold tassel, luxurious silky texture",
-      "CREAM and IVORY WHITE plush silk cushion with delicate gold floral embroidery and silky smooth surface",
-      "DEEP BURGUNDY RED velvet cushion with white ermine trim and gold thread patterns, rich silky texture",
-      "GOLDEN-OLIVE GREEN brocade cushion with intricate gold embroidery and silky damask pattern",
-      "PURE WHITE silk satin cushion with subtle gold accents and lustrous silky sheen",
-      "RICH NAVY BLUE velvet cushion with white satin trim and gold thread details, smooth silky feel",
-      "CREAM-COLORED silk cushion with gold botanical embroidery and luxurious silky texture",
-      "DEEP EMERALD GREEN velvet cushion with gold trim and decorative tassel, rich silky surface"
+      "ORNATE SOFT SAGE GREEN velvet throne cushion with RICH intricate gold embroidery patterns, BRIGHT decorative gold tassels at corners, detailed ornate gold threadwork, luxurious thick velvet texture, visible fabric folds, elaborate decorative details",
+      "ORNATE SOFT PERIWINKLE BLUE velvet throne cushion with RICH intricate gold thread embroidery, BRIGHT decorative gold tassels, detailed ornate patterns, rich plush texture, elaborate ornate details",
+      "ORNATE WARM TAUPE velvet throne cushion with RICH elegant gold embroidery patterns, BRIGHT gold tassels, detailed ornate gold threadwork, sumptuous velvety texture, elaborate classical styling",
+      "ORNATE MUTED EMERALD GREEN velvet cushion with RICH gold braided trim, BRIGHT ornate gold tassels, detailed intricate patterns, thick luxurious fabric, elaborate visible texture",
+      "ORNATE DUSTY BLUE velvet throne cushion with RICH antique gold embroidery, BRIGHT decorative gold tassels at corners, detailed ornate patterns, plush royal texture, elaborate details",
+      "ORNATE SOFT GREY velvet cushion with RICH gold thread patterns, BRIGHT ornate gold tassels, detailed intricate embroidery, thick velvety surface, elaborate classical details",
+      "ORNATE SAGE GREEN velvet throne cushion with RICH intricate gold embroidery, BRIGHT gold tassels, detailed ornate patterns, luxurious deep pile, elaborate ornate styling",
+      "ORNATE SOFT SAPPHIRE velvet cushion with RICH antique gold decorative embroidery, BRIGHT gold tassels, detailed ornate patterns, rich thick velvet, elaborate sumptuous texture"
     ];
     
     const robes = [
-      "LUXURIOUS CREAM-COLORED silk cape draped elegantly over shoulders with rich gold floral embroidery along edges, white ermine fur trim with black spots, silky smooth lustrous fabric",
-      "SHIMMERING LIGHT BLUE satin cape with silky smooth texture, white pearl accents and gold embroidery, pristine white ermine trim with spots",
-      "RICH CREAM and GOLD silk damask cape with silky sheen, white ermine fur trim with black spots, ornate gold botanical patterns",
-      "DEEP EMERALD GREEN velvet cape with silky smooth texture, white ermine trim with black spots, gold thread embroidery",
-      "LUMINOUS ANTIQUE WHITE silk cape with silky lustrous surface, gold and cream botanical embroidery, white ermine fur trim",
-      "RICH BURGUNDY RED velvet cape with silky texture, white ermine trim with black spots, gold embroidery details",
-      "CREAM-COLORED silk satin cape with silky smooth sheen, gold floral patterns, white ermine collar with black spots",
-      "DEEP NAVY BLUE velvet cape with silky texture, white ermine trim, gold thread patterns, luxurious silky feel"
+      "DAINTY SOFT SAPPHIRE BLUE velvet cloak with delicate gold thread embroidery patterns, soft plush velvety texture with visible nap, ermine-style PURE BRIGHT WHITE fur trim with black spots, draped delicately over body, dainty refined luxurious velvet fabric with realistic folds",
+      "DAINTY DUSTY ROSE velvet cloak with intricate delicate gold thread patterns, soft plush velvety texture, PURE WHITE ermine fur trim, dainty refined fabric draped over body and cushion, visible velvety texture and soft folds",
+      "DAINTY CREAM WHITE velvet cloak with delicate ornate gold embroidery, soft plush velvety texture with visible nap, ermine-style PURE BRIGHT WHITE fur trim with black spots, dainty sumptuous velvet fabric draped naturally",
+      "DAINTY SOFT PERIWINKLE BLUE velvet cloak with delicate gold thread detailing, soft plush velvety texture, PURE BRIGHT WHITE ermine fur trim, dainty refined velvet fabric with dramatic draping, realistic soft folds",
+      "DAINTY MUTED BURGUNDY velvet cloak with delicate antique gold thread patterns, soft plush velvety texture with visible nap, PURE WHITE ermine fur trim, dainty luxurious velvet fabric draped over body",
+      "DAINTY IVORY CREAM velvet cloak with delicate elaborate gold embroidery, soft plush velvety texture, ermine-style PURE BRIGHT WHITE fur trim, dainty refined velvet fabric with natural draping and soft folds",
+      "DAINTY SAGE GREEN velvet cloak with delicate gold thread embroidery, soft plush velvety texture with visible nap, PURE BRIGHT WHITE ermine fur trim with black spots, dainty sumptuous velvet fabric draped dramatically",
+      "DAINTY DUSTY CORAL velvet cloak with delicate intricate gold patterns, soft plush velvety texture, PURE BRIGHT WHITE ermine fur trim, dainty luxurious velvet fabric with realistic soft draping"
     ];
     
     const jewelry = [
-      "elegant gold chain necklace with multiple sparkling gemstones set in gold, single teardrop pearl or gem dangling from center, delicate and refined",
-      "magnificent gold choker-style necklace adorned with sparkling gemstones, teardrop-shaped pearl or gem dangling from center, ornate gold and pearl embellishments",
-      "delicate gold chain with small pink or ruby-colored gemstones, elegant and understated",
-      "layered gold necklaces with pearls and gemstones, ornate gold floral centerpiece, delicate teardrop pendant",
-      "elegant gold necklace with multiple gemstones in gold settings, single pearl or gem pendant, refined luxury",
-      "delicate gold chain with ornate gold and pearl embellishments, small gemstone accents, elegant simplicity",
-      "refined gold necklace with gemstone clusters, layered with pearls, delicate and beautiful",
-      "ornate gold collar-style necklace with sparkling gemstones and pearls, elegant teardrop pendant"
+      "dainty antique multi-chain gold necklace with multiple gem clusters (ruby, emerald, amethyst, topaz), gold filigree details, small pearls interspersed, NOT modern jewelry",
+      "delicate antique gold necklace with gem clusters (ruby red, emerald green, amethyst purple), intricate gold filigree, tiny pearls, multiple fine chains, classical styling",
+      "ornate antique gold multi-chain necklace with small gem clusters (topaz, ruby, emerald), delicate gold filigree work, tiny pearl accents, dainty and refined",
+      "elegant antique gold necklace with multiple gem clusters (amethyst, ruby, topaz, emerald), gold filigree details, small pearls, layered fine chains, NOT simple beads",
+      "dainty gold filigree necklace with gem clusters (ruby, emerald, amethyst), multiple delicate chains, tiny pearl accents, antique classical styling",
+      "refined antique gold multi-chain necklace with small gem clusters (topaz yellow, ruby red, emerald green, amethyst purple), intricate filigree, tiny pearls",
+      "delicate antique gold necklace with ornate gem clusters (ruby, amethyst, emerald, topaz), gold filigree work, small pearls, multiple fine chains, dainty and elegant",
+      "ornate antique gold necklace with multiple gem clusters (emerald, ruby, topaz, amethyst), delicate gold filigree, tiny pearl accents, NOT modern, classical jewelry"
     ];
     
     const backgrounds = [
-      "ROYAL PALACE background with BRIGHT RICH NAVY BLUE velvet drapery cascading elegantly, ornate white marble columns, golden architectural details, warm ambient light",
-      "REGAL COURT background with LUMINOUS LIGHT BLUE silk curtains, white marble pillars, intricate gold leaf patterns, bright natural window light",
-      "NOBLE HALL background with ELEGANT CHARCOAL GRAY velvet drapes with gold trim, white marble accents, ornate gilded frames, soft warm lighting",
-      "ROYAL CHAMBER background with BRIGHT NAVY BLUE and PURE WHITE silk drapes, marble columns, gold decorative elements, well-lit and airy",
-      "PALATIAL SETTING background with RICH PERIWINKLE BLUE velvet curtains, white marble details, golden scrollwork, bright diffused light",
-      "REGAL INTERIOR background with LUMINOUS LIGHT BLUE and IVORY WHITE silk drapes, ornate marble architecture, gold accents, warm natural light",
-      "NOBLE BACKGROUND with ELEGANT SLATE BLUE velvet drapery, white marble columns, gold trim details, bright and beautiful lighting",
-      "ROYAL SETTING background with BRIGHT NAVY BLUE velvet, pristine white marble, intricate gold decorations, luminous warm ambient glow"
+      "SPACIOUS grand chamber background with DEPTH, soft gradient from WARM TAUPE to SOFT BROWN with atmospheric perspective, large DUSTY ROSE velvet drapery hanging behind with visible folds, BRIGHTER pastel-leaning tones, elegant and airy NOT gloomy",
+      "DEEP SPACIOUS room background with sense of grand chamber, warm SOFT TAUPE to MUTED CARAMEL gradient, heavy SOFT BURGUNDY velvet brocade draped behind with rich texture, BRIGHTER pastel tones, elegant airy atmosphere",
+      "grand chamber with ATMOSPHERIC DEPTH, soft WARM BEIGE to TAUPE painterly gradient, large MUTED MAUVE velvet fabric draped behind with visible texture, BRIGHTER color scheme, spacious elegant feel",
+      "SPACIOUS background with sense of DEPTH, soft gradient from WARM TAUPE to SOFT OLIVE with atmospheric perspective, heavy SAGE GREEN brocade drapery behind with visible folds, BRIGHTER pastel-leaning jewel tones, airy classical style",
+      "DEEP BLACK background creating STRONG CONTRAST with fabrics and jewelry, rich DEEP BLACK velvet drapery hanging behind, dramatic contrast with pet's natural colors and bright fabrics, elegant dramatic atmosphere",
+      "ATMOSPHERIC DEPTH background suggesting grand chamber, soft WARM BEIGE to TAUPE to SOFT OLIVE gradient, MUTED LAVENDER velvet drapery behind with visible texture, BRIGHTER elegant pastel tones",
+      "DEEP BLACK background with STRONG CONTRAST, rich DEEP BLACK velvet fabric draped behind creating dramatic contrast with bright fabrics and jewelry, elegant dramatic portrait atmosphere",
+      "grand chamber with ATMOSPHERIC PERSPECTIVE and DEPTH, soft WARM CARAMEL to TAUPE gradient, large SOFT BURGUNDY brocade drapery with rich folds, BRIGHTER pastel tones, spacious elegant royal atmosphere"
     ];
     
     const lightingDirections = [
-      "BRIGHT, WARM natural daylight from upper left, creating soft elegant shadows, well-lit subject",
-      "LUMINOUS diffused light from the left with gentle fill light, bright and beautiful",
-      "BRIGHT, EVEN studio lighting from above and left, evenly illuminated, no harsh shadows",
-      "WARM natural window light from the left, bright and airy, creating a glowing effect"
+      "single WARM KEY LIGHT from upper left, BRIGHTER illumination on subject, soft chiaroscuro with moderate shadows and STRONG BRIGHT WHITE highlights, sculpted fur texture, warm dark background (not pitch black), warm golden RIM HIGHLIGHTS, subtle SOFT GLOW throughout, elegant NOT gloomy",
+      "single warm KEY LIGHT from upper front-left, BRIGHTLY LIT subject with subtle SOFT GLOW overall, soft chiaroscuro lighting with moderate shadows, BRIGHT WHITE highlights on fur, warm dark background, warm golden rim light, gentle luminosity",
+      "warm KEY LIGHT from upper left creating BRIGHT illumination with subtle SOFT GLOW, soft chiaroscuro, moderate shadows contrasting with STRONG BRIGHT WHITE highlights, fur texture sculpted by light, golden rim highlights, warm dark background, gentle luminous atmosphere",
+      "single WARM KEY LIGHT upper left, BRIGHTER overall lighting on subject with subtle SOFT GLOW throughout, classic portrait lighting with moderate shadows and BRIGHT WHITE highlights, sculpted fur texture, warm golden glow around pet, gentle luminosity"
     ];
 
     // Pick random elements
-    const cushion = cushions[Math.floor(Math.random() * cushions.length)];
-    const robe = robes[Math.floor(Math.random() * robes.length)];
-    const jewelryItem = jewelry[Math.floor(Math.random() * jewelry.length)];
-    const background = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+    let cushion = cushions[Math.floor(Math.random() * cushions.length)];
+    let robe = robes[Math.floor(Math.random() * robes.length)];
+    let jewelryItem = jewelry[Math.floor(Math.random() * jewelry.length)];
+    let background = backgrounds[Math.floor(Math.random() * backgrounds.length)];
     const lighting = lightingDirections[Math.floor(Math.random() * lightingDirections.length)];
 
-    // Step 2: Generate Renaissance royal portrait - SPECIES AND PET ACCURACY ARE #1 PRIORITY
+    // Adjust for FEMALE pets - feminine aesthetic
+    if (gender === "female") {
+      // Lighter, softer cloak colors for female pets
+      const feminineRobes = [
+        "DAINTY SOFT PINK velvet cloak with delicate gold thread embroidery, soft plush velvety texture, PURE WHITE ermine fur trim, dainty refined fabric - lighter softer feminine tones",
+        "DAINTY LAVENDER velvet cloak with delicate gold patterns, soft plush velvety texture, PURE BRIGHT WHITE ermine fur trim, dainty luxurious fabric - soft feminine colors",
+        "DAINTY SOFT ROSE velvet cloak with delicate ornate gold embroidery, soft plush velvety texture, PURE WHITE ermine fur trim, dainty refined fabric - lighter feminine tones",
+        "DAINTY PEARL WHITE velvet cloak with delicate gold thread detailing, soft plush velvety texture, PURE BRIGHT WHITE ermine fur trim, dainty sumptuous fabric - soft luminous feminine",
+        "DAINTY SOFT BLUE velvet cloak with delicate gold embroidery, soft plush velvety texture, PURE WHITE ermine fur trim, dainty luxurious fabric - lighter softer feminine colors"
+      ];
+      robe = feminineRobes[Math.floor(Math.random() * feminineRobes.length)];
+      
+      // Finer, more delicate jewelry for female pets
+      const feminineJewelry = [
+        "extra delicate fine antique gold necklace with tiny gem clusters (small ruby, emerald, amethyst), intricate gold filigree, tiny pearls, very fine chains - FINER and more delicate",
+        "dainty delicate antique gold necklace with small gem clusters, ornate fine filigree work, tiny pearl accents, multiple fine delicate chains - FINER jewelry",
+        "delicate fine gold necklace with petite gem clusters, intricate delicate filigree, small pearls, fine delicate chains - FINER and more refined"
+      ];
+      jewelryItem = feminineJewelry[Math.floor(Math.random() * feminineJewelry.length)];
+    }
+
+    // Check if white cat - add angelic luminous treatment
+    const isWhiteCat = species === "CAT" && (
+      petDescription.toLowerCase().includes("white") || 
+      petDescription.toLowerCase().includes("snow white") ||
+      petDescription.toLowerCase().includes("pure white")
+    );
+
+    // Step 2: Generate late 18th-century aristocratic royal portrait - SPECIES AND PET ACCURACY ARE #1 PRIORITY
     const genderInfo = gender ? `\n=== GENDER ===\nThis is a ${gender === "male" ? "male" : "female"} ${species}.` : "";
+    
+    // Add feminine aesthetic instructions for female pets
+    const feminineAesthetic = gender === "female" ? `
+=== FEMININE AESTHETIC ===
+This is a FEMALE ${species} - apply feminine aesthetic:
+- LIGHTER, SOFTER cloak colors - pastel pinks, lavenders, soft blues, pearl whites
+- DELICATE fabrics - fine, refined, gentle textures
+- FINER jewelry - more delicate, smaller gems, intricate filigree
+- GENTLER visual tone - softer lighting, more graceful composition
+- Overall elegant feminine refinement` : "";
+
+    // Add angelic luminous treatment for white cats
+    const whiteCatTreatment = isWhiteCat ? `
+=== WHITE CAT - ANGELIC LUMINOUS TREATMENT ===
+This is a WHITE CAT - apply angelic luminous aesthetic:
+- ANGELIC appearance - ethereal, heavenly, divine
+- LUMINOUS glow that enhances white fur - soft radiant light
+- SOFT GLOW around the entire cat - gentle radiance
+- Enhanced presence - the white cat should GLOW with light
+- More luminous than other pets - special angelic treatment` : "";
     
     // Age preservation instructions
     let agePreservationInstructions = "";
@@ -1787,24 +1886,24 @@ WHAT CREATES INSTANT RECOGNITION:
 - Natural animal proportions and body structure
 - The pet is a REAL ${species}, not an anthropomorphic character
 
-=== COMPOSITION: FULL BODY PORTRAIT - NOT A CLOSE-UP ===
-- WIDE FRAMING - show the ENTIRE ${species} from head to paws
-- DO NOT crop the ears - leave plenty of space above the head
-- Medium distance shot - the pet takes up about 60-70% of the frame height
-- Include visible space/padding around the entire subject
-- NOT a face close-up - this is a FULL BODY seated portrait
+=== COMPOSITION (CRITICAL - Follow Exactly) ===
+- Subject positioned LOW and CENTRAL - resting on cushion, not standing or floating
+- Body ¾ VIEW, head forward or slightly angled - late 18th-century aristocratic portrait posture
+- FRONT PAWS VISIBLE and resting on cushion - signature trait
+- Cloak draped over body + cushion - looks heavy, rests naturally with realistic folds
+- MEDIUM CLOSE-UP framing: chest to top of head (NOT full body, NOT face only)
+- Camera at pet's eye level or slightly above
 
 === POSE: REGAL SEATED POSITION ===
-- The ${species} is SEATED majestically on a cushion/throne
-- ALL FOUR PAWS visible - front paws resting elegantly, back paws tucked
+- The ${species} is SEATED majestically on throne cushion
+- Front paws visible, resting elegantly on cushion
 - Head held high with noble, dignified expression
-- Natural seated animal pose - like a royal pet portrait
-- FULL BODY clearly visible from ears to tail/paws
+- Body ¾ view - late 18th-century aristocratic portrait posture
+- Dainty delicate cloak draped naturally over body - soft plush velvety texture
 - Proud, regal posture befitting nobility
-- The pet is centered in the frame with room to breathe around edges
 ${facialStructureSection}
 === THE ${species} - DETAILED DESCRIPTION ===
-${petDescription}${genderInfo}${agePreservationInstructions}
+${petDescription}${genderInfo}${feminineAesthetic}${whiteCatTreatment}${agePreservationInstructions}
 
 === CRITICAL: EXACT MATCHING ===
 The generated pet MUST match the description EXACTLY:
@@ -1821,38 +1920,70 @@ This ${species} portrait must look like THIS EXACT ${species}. ${notSpecies}
 === STYLE: CLASSICAL OIL PAINTING - ROYAL PORTRAIT ===
 This MUST look like a REAL OIL PAINTING with visible brushstrokes, rich texture, and luminous depth:
 - CLASSICAL OIL PAINTING TECHNIQUE: Visible brushstrokes, rich impasto texture, layered glazing
-- OLD MASTER STYLE: Like Rembrandt, Van Dyck, or Gainsborough - rich, luminous, painterly
+- LATE 18TH-CENTURY STYLE: Like Gainsborough, Reynolds, or Vigée Le Brun (1770-1830) - rich, luminous, painterly, Georgian/Regency/Napoleonic era
 - TEXTURE: Visible paint texture, brush marks, rich oil paint application
 - DEPTH: Multiple layers of paint creating luminous depth and richness
 - SURFACE QUALITY: Matte to semi-gloss finish typical of oil paintings
 - NO PHOTOGRAPHIC LOOK: Must look hand-painted, not like a photo filter
 
-COLOR PALETTE - BRIGHT, BEAUTIFUL, ROYAL:
-- PRIMARY COLORS: BRIGHT light blues, PURE whites, rich deep blues, elegant grays
-- ACCENT COLORS: Silver threads, white pearls, light blue gems, subtle gold accents
-- BACKGROUND: BRIGHT and ROYAL - rich navy blues, luminous whites, warm ambient lighting
-- AVOID: Dark, moody, shadowy backgrounds - use BRIGHT, ROYAL, well-lit backgrounds
-- FABRICS: White ermine fur with black spots, white lace, BRIGHT light blue satin, rich velvet
-- JEWELRY: White pearls, silver, light blue sapphires, subtle gold details - draped elegantly
-- COLORS: BRIGHT, SATURATED, BEAUTIFUL - not muted or dark
+=== COLOR PALETTE (Brighter, Pastel-Leaning Royal Portrait) ===
+BACKGROUND & SHADOWS:
+- BRIGHTER warm tones: soft taupe, warm beige, muted caramel, soft olive
+- Soft painterly gradients with ATMOSPHERIC DEPTH
+- NOT dark or gloomy - warm and inviting
 
-KEY QUALITIES:
-- BRIGHT, ROYAL BACKGROUND - well-lit palace or noble hall setting
-- SILKY, LUMINOUS fabric textures - shimmering satin, plush velvet with visible texture
-- WELL-LIT SUBJECT - the pet GLOWS with warm, bright light
-- Delicate floral embroidery in BRIGHT light blue, white, and silver
-- VISIBLE OIL PAINT BRUSHSTROKES - rich, textured, painterly surface
-- LUMINOUS GLAZING TECHNIQUE - multiple layers creating depth and richness
-- BRIGHT, BEAUTIFUL color palette - royal blues, pure whites, elegant grays
+FABRICS & DRAPES:
+- BRIGHTER PASTEL-LEANING jewel tones: dusty rose, soft sapphire, muted emerald, soft burgundy, dusty lavender, sage green
+- BRIGHT cream/ivory accents
+- BRIGHT antique gold embroidery throughout
+- Colors should be LUMINOUS and SOFT - not harsh
+
+JEWELRY:
+- BRIGHT gold + soft ruby pink + muted emerald + soft amethyst + warm topaz
+- Gold filigree, small BRIGHT WHITE pearls, multi-chain necklaces
+- BRIGHT gem highlights that sparkle
+- NOT modern, NOT simple beads
+
+FUR TONES:
+- Naturalistic, warm, softly blended
+- Painterly with LONG flowing brushwork
+- BRIGHT highlights on fur
+- Preserve exact pet coloring
+- Keep deep blacks rich and saturated
+
+=== RENDERING STYLE (Critical) ===
+- TRUE OIL PAINTING TEXTURE - LONG, FLOWING visible brush strokes throughout
+- ELONGATED brushwork - longer strokes for painterly effect
+- High detail but NOT photorealistic, NOT too perfect
+- Late 18th-century aristocratic portrait feel (1770-1830) - Georgian/Regency/Napoleonic era with hand-painted charm
+- Thick, layered pigments with BRIGHT WHITE highlights
+- NOT digital, NOT airbrushed, NOT overly smooth, NOT overly perfect
+- Painterly fur with LONG flowing brushwork
+- Subtle SOFT GLOW throughout - gentle luminosity and warmth
+- Slightly soft edges in places - painterly not clinical
+
+=== KEY QUALITIES ===
+- SPACIOUS background with DEPTH - feels like grand chamber, NOT flat
+- BRIGHTER PASTEL-LEANING fabrics (dusty rose, soft sapphire, sage green, muted mauve)
+- Rich velvety textures on cloak and cushion
+- Single warm key light - BRIGHTER illumination on subject
+- Subtle SOFT GLOW overall - gentle luminous atmosphere
+- Warm golden rim highlights around pet
+- Dainty antique jewelry with BRIGHT sparkling gem clusters
+- PURE BRIGHT WHITE ermine-style fur trim on cloak
 - NATURAL ANIMAL BODY - four legs, normal pet anatomy
-- ROYAL, REGAL atmosphere - like a palace portrait
+- PRESERVE DEEP BLACKS in fur - rich and saturated
+- BRIGHTER overall - pastel-leaning, airy, NOT gloomy
+- Hand-painted feel with slight imperfections - NOT too perfect
 
 === COLOR MATCHING REQUIREMENTS ===
-- Match colors EXACTLY as described - if described as 'midnight black', use midnight black, not charcoal gray
-- If described as 'snow white', use pure white, not off-white
-- If described as 'honey gold', use that exact golden honey color
+- Match colors EXACTLY as described - if described as 'midnight black', use rich deep midnight black, not charcoal gray
+- PRESERVE DEEP BLACKS: Any black fur or features must remain rich, deep, and saturated - never lighten black areas
+- If described as 'snow white', use pure bright white, not off-white
+- If described as 'honey gold', use that exact vibrant golden honey color
 - Preserve color gradients exactly - if darker on back, lighter on belly, maintain this gradient
 - Do not change or approximate colors - use the exact colors described
+- Brighten lighter colors while keeping deep blacks intact and rich
 
 === MARKINGS AND PATTERNS ===
 - Every marking, spot, patch, or stripe described MUST appear in the generated image in the EXACT same location
@@ -1869,9 +2000,9 @@ KEY QUALITIES:
 - Nose size relative to face must match - if described as 'small nose', generate a small nose
 - Muzzle length must match - if described as 'short muzzle', generate a short muzzle
 
-FULL BODY PORTRAIT: The ${species} is SEATED regally on ${cushion}, wearing ${robe} draped over its back, with ${jewelryItem} around its neck. ${background}. ${lighting}. Show the ENTIRE pet from ears to paws - wide framing, not a close-up. 
+FULL BODY PORTRAIT: The ${species} is SEATED NATURALLY like a real ${species} on ${cushion}, with ${robe} draped over its back (NOT clothing, just draped fabric), with ${jewelryItem} around its neck. ${background}. ${lighting}. NO human clothing - ONLY a draped cloak. Natural animal seated pose. Show the ENTIRE pet from ears to paws - wide framing, not a close-up. 
 
-CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTING with visible brushstrokes, rich texture, and luminous depth. Like an old master portrait - Rembrandt, Van Dyck, or Gainsborough style. Rich, painterly surface with visible paint application. BRIGHT, ROYAL, WELL-LIT background - not dark or moody. Museum-quality fine art oil painting portrait of a noble pet - fully animal, majestic seated pose, complete body visible, BRIGHT and BEAUTIFUL colors. The pet MUST match the description EXACTLY in every detail.`;
+RENDERING: TRUE OIL PAINTING with LONG FLOWING visible brush strokes, thick layered pigments, BRIGHT WHITE highlights, high detail but NOT photorealistic and NOT too perfect. Late 18th-century European aristocratic portrait feel (1770-1830 Georgian/Regency/Napoleonic era, Gainsborough/Reynolds/Vigée Le Brun style) - elegant and AIRY, NOT gloomy, hand-painted charm with slight imperfections. NOT Renaissance. NOT digital, NOT airbrushed, NOT overly smooth, NOT overly perfect. Subtle SOFT GLOW throughout - gentle luminosity. SPACIOUS background with ATMOSPHERIC DEPTH - feels like grand chamber. Single warm key light - BRIGHTLY LIT subject, soft chiaroscuro with moderate shadows, warm golden rim highlights. DEEP RICH SATURATED jewel-toned fabrics. DAINTY, DELICATE SOFT PLUSH VELVETY cloak DRAPED over pet (NOT clothing, just draped fabric) with visible velvet nap and plush texture, PURE BRIGHT WHITE ermine trim, dainty antique jewelry with BRIGHT sparkling gem clusters and BRIGHT WHITE pearls. Velvet throne cushion with gold embroidery. Pet seated NATURALLY like a real ${species} - NOT human-like pose. NO human clothing. Pet MUST match original EXACTLY - warm natural fur with BRIGHT WHITE painterly highlights and LONG brushwork, deep blacks preserved rich and saturated. All whites should be PURE BRIGHT WHITE. Slightly soft edges - painterly not clinical.`;
 
     // Determine which model to use for generation
     // Priority: OpenAI img2img > Stable Diffusion > Composite > Style Transfer > IP-Adapter > FLUX > GPT-Image-1
@@ -1925,7 +2056,7 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
       // Use OpenAI img2img for primary generation
       console.log("🎨 Using OpenAI img2img (images.edit) for primary generation...");
       console.log("📌 Pet identity will be preserved from original image");
-      console.log("📌 Transforming pet photo directly into Renaissance portrait");
+      console.log("📌 Transforming pet photo directly into late 18th-century aristocratic portrait");
       
       // Create a focused prompt for OpenAI img2img
       // OpenAI's images.edit works best with SHORT, CLEAR instructions
@@ -1942,7 +2073,137 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
         ? "CRITICAL: This is a DOG. Generate ONLY a DOG. DO NOT generate a cat. This MUST be a DOG."
         : `CRITICAL: This is a ${species}. Generate ONLY a ${species}.`;
       
-      const openAIImg2ImgPrompt = `${speciesEnforcement} DO NOT change the ${species} at all - keep it exactly as shown in the original image. This is a ${species}, not any other animal. Preserve the face, body, markings, colors, fur pattern, eye color, ear shape, nose, and expression exactly from the original image. Only modify the background and add: a silk cape draped over the ${species}'s back (not clothing, just draped fabric), gold jewelry around the neck, and a cushion beneath. Transform only the background into a Renaissance painting style. The ${species} itself must remain completely unchanged and identical to the original photo. Remember: this is a ${species}.`;
+      // Check if white cat for OpenAI img2img
+      const isWhiteCatForOpenAI = species === "CAT" && (
+        petDescription.toLowerCase().includes("white") || 
+        petDescription.toLowerCase().includes("snow white") ||
+        petDescription.toLowerCase().includes("pure white")
+      );
+      
+      const feminineAestheticForOpenAI = gender === "female" ? `
+=== FEMININE AESTHETIC ===
+This is a FEMALE ${species} - apply feminine aesthetic:
+- LIGHTER, SOFTER cloak colors - pastel pinks, lavenders, soft blues, pearl whites
+- DELICATE fabrics - fine, refined, gentle textures
+- FINER jewelry - more delicate, smaller gems, intricate filigree
+- GENTLER visual tone - softer lighting, more graceful composition
+- Overall elegant feminine refinement
+` : "";
+
+      const whiteCatTreatmentForOpenAI = isWhiteCatForOpenAI ? `
+=== WHITE CAT - ANGELIC LUMINOUS TREATMENT ===
+This is a WHITE CAT - apply angelic luminous aesthetic:
+- ANGELIC appearance - ethereal, heavenly, divine
+- LUMINOUS glow that enhances white fur - soft radiant light
+- SOFT GLOW around the entire cat - gentle radiance
+- Enhanced presence - the white cat should GLOW with light
+- More luminous than other pets - special angelic treatment
+` : "";
+
+      const openAIImg2ImgPrompt = `${speciesEnforcement} DO NOT change the ${species} at all - keep it exactly as shown in the original image. This is a ${species}, not any other animal.
+
+18th-century aristocratic oil portrait of a pet. Late 18th-century European aristocratic portraiture (1770-1830) - Georgian/Regency/Napoleonic era. Like Gainsborough, Reynolds, Vigée Le Brun. NOT Renaissance.${feminineAestheticForOpenAI}${whiteCatTreatmentForOpenAI}
+
+=== CRITICAL PET PRESERVATION ===
+- Preserve the face structure, skull shape, snout proportions EXACTLY from the original
+- Keep all markings, colors, fur patterns in their EXACT locations
+- Maintain the exact eye color, shape, spacing, and expression
+- Preserve ear shape, size, and position exactly
+- Warm, natural fur tones with soft painterly highlights and fine brushwork
+- The pet's unique identifying features must remain unchanged
+
+=== LIGHTING (Dramatic Directional Chiaroscuro with Glow - Retaining Darker Tones) ===
+- Use dramatic, directional CHIAROSCURO lighting with BRIGHTER overall illumination
+- STRONG BRIGHT HIGHLIGHT on the FACE - this is the focal point
+- DEEP SHADOW FALLOFF around the neck and into the background - RETAINING DARKER TONES
+- Single BRIGHT warm key light from upper left creating sculpted fur texture
+- Background with DARKER TONES in shadows - rich depth, retaining darker tones
+- BRIGHT warm golden RIM HIGHLIGHTS around the pet creating a GLOW
+- SUBTLE LUMINOUS GLOW throughout the image - gentle radiance and brightness
+- Subject GLOWS with BRIGHT warm light - luminous and well-lit
+- DARKER TONES retained in shadows and background for depth and contrast
+
+=== AUTOMATIC COLOR HARMONY (DEEP, RICH Colors Based on Pet's Natural Colors) ===
+Select DEEP, RICH, SATURATED cloak, cushion, drapery, and gem colors based on the pet's natural fur, eye, and nose tones. Use DEEP, RICH, SATURATED colors while retaining darker tones in shadows:
+
+FOR WARM-TONED OR TAN PETS: DEEP rich blues, DEEP forest greens, RICH burgundy, or DEEP teal fabrics with gold embroidery - DEEP and SATURATED
+FOR BLACK OR DARK-COATED PETS: RICH cream, DEEP ivory, RICH gold, DEEP emerald, DEEP sapphire, RICH lavender fabrics for contrast - DEEP and RICH
+FOR WHITE OR PALE PETS: DEEP rich jewel tones (DEEP ruby, DEEP emerald, DEEP sapphire, RICH periwinkle) or DEEP velvets - RICH colors
+FOR ORANGE/GINGER PETS: DEEP teal, RICH turquoise, DEEP forest green, or DEEP navy fabrics - DEEP SATURATED tones
+FOR GRAY OR SILVER PETS: DEEP burgundy, RICH plum, DEEP amethyst, or RICH gold-trimmed velvets - DEEP and RICH
+FOR MULTICOLOR PETS: harmonize with dominant fur tone using DEEP/RICH colors, accent with SATURATED secondary tone
+
+Apply same harmony to GEMSTONES: select DEEP RICH gems that complement pet's eyes or fur (DEEP ruby, DEEP emerald, DEEP sapphire, RICH topaz, DEEP amethyst) - SPARKLING, LUMINOUS, and DEEP SATURATED
+
+=== COMPOSITION (Wide, Centered, Full Cushion Visible) ===
+- WIDE and CENTERED composition
+- Show FULL CUSHION, regal posture, classical aristocratic portrait aesthetics
+- Pet seated NATURALLY like a real ${species} - NOT human-like posture
+- Natural animal seated pose: body low, front paws resting naturally on cushion
+- Body ¾ view, head forward - natural animal posture
+- FRONT PAWS VISIBLE and resting naturally on cushion
+- NO human clothing - ONLY a cloak draped over the pet
+- All colors automatically unified and harmonious with pet's natural palette
+
+=== THRONE CUSHION ===
+- Embroidered SILKY velvet cushion with VISIBLE GOLD TASSELS
+- DEEP, RICH, SATURATED color selected to complement pet's fur tones
+- SILKY texture with visible sheen
+- Gold embroidery, ornate details
+- Rich, deep tones - saturated and luminous
+
+=== REGAL CLOAK (Draped Over Pet AND Cushion - NOT Clothing) ===
+- DAINTY, DELICATE regal CLOAK DRAPED over BOTH the pet AND cushion - NOT clothing, just draped fabric
+- More DAINTY and REFINED - not heavy or bulky
+- NO human clothing elements - NO sleeves, NO buttons, NO tailored garments
+- Just a DAINTY CLOAK/ROBE draped naturally over the pet's back and shoulders
+- SOFT, PLUSH VELVETY texture - luxurious velvet with visible nap and plush feel
+- VELVETY appearance - soft, plush, luxurious velvet fabric
+- BRIGHT ANTIQUE GOLD EMBROIDERY - delicate and refined
+- DEEP, RICH, SATURATED fabric colors adjusted to enhance and balance pet's tones
+- WHITE FUR TRIM with BLACK ERMINE SPOTS
+- Looks DAINTY, VELVETY, and luxurious - soft plush velvet texture
+- Fabric GLOWS with DEEP, RICH color - saturated and luminous, retaining darker tones in folds
+- Pet's natural body and fur visible beneath the draped cloak
+
+=== ANTIQUE 18TH-CENTURY JEWELRY ===
+- Layered MULTI-CHAIN gold necklaces
+- Ornate FILIGREE details
+- BRIGHT WHITE PEARLS and small CLUSTERED BRIGHT GEMSTONES
+- BRIGHT SPARKLING gems match or complement pet's natural colors (eyes/fur)
+- Gems GLOW and SPARKLE - not dull
+- NOT modern jewelry, NOT simple beads
+
+=== BACKGROUND DRAPERY ===
+- Heavy SILKY velvet drapery with PAINTERLY FOLDS
+- DEEP, RICH, SATURATED colors selected to support overall harmony with pet
+- SILKY LUSTROUS texture with visible sheen
+- Atmospheric depth with DARKER TONES in shadows and folds - retaining darker tones
+- Colors should be DEEP, RICH, and SATURATED - rich jewel tones
+- DARKER TONES in shadows and background depth
+- ZERO modern elements
+
+=== WHITE TONES ===
+- All whites should be PURE BRIGHT WHITE - not grey, not muted
+- Ermine fur trim: PURE WHITE with black spots
+- Pearl accents: BRIGHT WHITE
+- White highlights: PURE BRIGHT WHITE
+
+=== RENDERING (Old-Master Realism with Glow - Deep Colors, Darker Tones) ===
+- VISIBLE BRUSHSTROKES throughout
+- TEXTURED OIL PAINT appearance
+- CANVAS GRAIN texture
+- MUSEUM-QUALITY rendering
+- Hand-painted look with slight imperfections
+- LONG, FLOWING brush strokes
+- NOT digital, NOT airbrushed, NOT too perfect
+- SUBTLE LUMINOUS GLOW throughout - gentle radiance and warmth
+- SILKY LUSTROUS textures on fabrics - visible sheen and luster
+- DEEP, RICH, SATURATED colors throughout - rich jewel tones
+- DARKER TONES retained in shadows and background for depth
+- Subject GLOWS with BRIGHT warm light, fabrics GLOW with DEEP RICH color
+
+CRITICAL: The ${species} must sit NATURALLY like a real ${species} - NOT in a human-like pose. NO human clothing - ONLY a cloak draped over. The ${species} itself must remain completely unchanged and identical to the original photo. Remember: this is a ${species}, not a human.`;
       
       // Process the original image buffer for OpenAI
       const processedForOpenAI = await sharp(buffer)
@@ -1961,7 +2222,7 @@ CLASSICAL OIL PAINTING STYLE: This MUST look like a REAL HAND-PAINTED OIL PAINTI
       // Use full Stable Diffusion SDXL for generation
       console.log("🎨 Using Full Stable Diffusion SDXL...");
       console.log("📌 Pet identity preserved from reference image");
-      console.log("📌 Renaissance portrait style applied via SDXL");
+      console.log("📌 Late 18th-century aristocratic portrait style applied via SDXL");
       
       firstGeneratedBuffer = await generateWithStableDiffusion(
         base64Image,
@@ -2009,7 +2270,7 @@ BACKGROUND - MAKE IT BEAUTIFUL:
 - Create a LIGHTER, more luminous background - soft creams, warm ivories, gentle golden tones
 - NOT dark or gloomy - bright and elegant like a sunlit palace
 - Add elegant royal elements: plush cushion, luxurious velvet robe draped nearby, ornate gold details
-- Soft, diffused Renaissance lighting throughout
+- Soft, diffused late 18th-century portrait lighting throughout
 - Beautiful color palette: soft golds, warm creams, touches of deep red velvet and teal
 
 ADD ROYAL ELEMENTS TO THE ${species.toUpperCase()}:
@@ -2073,22 +2334,22 @@ This is a ${detectedBreed || species}. Create a royal portrait with a LIGHT, BEA
       console.log("📌 No fallback - if Replicate fails, generation fails");
       
       // IP-Adapter prompt focuses ONLY on style/scene - identity comes from reference image
-      const ipAdapterPrompt = `A majestic royal Renaissance oil painting portrait of a ${species}.
+      const ipAdapterPrompt = `A majestic royal late 18th-century European aristocratic oil painting portrait of a ${species}. Georgian/Regency/Napoleonic era style (1770-1830).
 
 PAINTING STYLE:
 Classical oil painting with visible brushstrokes, rich impasto texture, luminous glazing.
-Old master technique like Rembrandt, Van Dyck, or Gainsborough.
+Late 18th-century technique like Gainsborough, Reynolds, or Vigée Le Brun (1770-1830 Georgian/Regency/Napoleonic era).
 Museum-quality fine art, dramatic lighting, rich colors.
 
 COMPOSITION:
-Seated regally on ${cushion}.
-Wearing ${robe}.
+Seated NATURALLY like a real ${species} on ${cushion} - NOT human-like pose.
+With ${robe} DRAPED over its back - NOT clothing, just draped fabric. NO human clothing elements.
 Adorned with ${jewelryItem}.
 ${background}.
 ${lighting}.
-Full body portrait, dignified pose, all four paws visible.
+Full body portrait, natural animal seated pose, all four paws visible.
 
-The ${species} should match the reference image exactly - same face, markings, colors, and expression.`;
+The ${species} should match the reference image exactly - same face, markings, colors, and expression. CRITICAL: ${species} must sit NATURALLY like a real ${species} - NOT human-like pose. NO human clothing - ONLY a cloak draped over.`;
 
       // No fallback - if IP-Adapter fails, we fail
       firstGeneratedBuffer = await generateWithIPAdapter(
@@ -2103,29 +2364,98 @@ The ${species} should match the reference image exactly - same face, markings, c
       console.log("📌 Pet identity will be preserved from original image");
       console.log("📌 No fallback - if Replicate fails, generation fails");
       
-      const fluxPrompt = `Transform into a classical Renaissance oil painting portrait.
+      // Check if white cat for FLUX
+      const isWhiteCatForFlux = species === "CAT" && (
+        petDescription.toLowerCase().includes("white") || 
+        petDescription.toLowerCase().includes("snow white") ||
+        petDescription.toLowerCase().includes("pure white")
+      );
+      
+      const feminineAestheticForFlux = gender === "female" ? `
+=== FEMININE AESTHETIC ===
+FEMALE ${species} - feminine aesthetic:
+- LIGHTER, SOFTER cloak colors - pastel pinks, lavenders, soft blues, pearl whites
+- DELICATE fabrics - fine, refined, gentle textures
+- FINER jewelry - more delicate, smaller gems, intricate filigree
+- GENTLER visual tone - softer lighting, more graceful
+` : "";
 
-STYLE REQUIREMENTS:
-- Classical oil painting technique with visible brushstrokes and rich impasto texture
-- Old master style like Rembrandt, Van Dyck, or Gainsborough
-- Luminous depth with layered glazing technique
-- Regal royal portrait composition
+      const whiteCatTreatmentForFlux = isWhiteCatForFlux ? `
+=== WHITE CAT - ANGELIC LUMINOUS ===
+WHITE CAT - angelic luminous:
+- ANGELIC appearance - ethereal, heavenly
+- LUMINOUS glow enhancing white fur - soft radiant light
+- SOFT GLOW around entire cat - gentle radiance
+- Enhanced presence - cat GLOWS with light
+` : "";
 
-SCENE ELEMENTS:
-- Seated majestically on ${cushion}
-- Wearing ${robe} draped elegantly
-- Adorned with ${jewelryItem}
-- ${background}
-- ${lighting}
+      const fluxPrompt = `18th-century aristocratic oil portrait. Late 18th-century European aristocratic portraiture (1770-1830 Georgian/Regency/Napoleonic era). Style of Gainsborough, Reynolds, Vigée Le Brun. NOT Renaissance.${feminineAestheticForFlux}${whiteCatTreatmentForFlux}
 
-PRESERVE FROM ORIGINAL IMAGE:
-- Exact facial features and structure
-- All markings and colorings in precise locations  
-- Eye color, shape, and expression
-- Fur texture and patterns
-- The pet's unique identity and "look"
+=== LIGHTING (Brighter Dramatic Chiaroscuro with Glow - Retaining Darker Tones) ===
+- Dramatic, directional CHIAROSCURO lighting with BRIGHTER overall illumination
+- STRONG BRIGHT HIGHLIGHT on the FACE - focal point
+- DEEP SHADOW FALLOFF around neck and into background - RETAINING DARKER TONES
+- Background with DARKER TONES in shadows - rich depth, retaining darker tones
+- BRIGHT warm golden RIM HIGHLIGHTS creating a GLOW around pet
+- SUBTLE LUMINOUS GLOW throughout - gentle radiance and brightness
+- Subject GLOWS with BRIGHT warm light - well-lit and luminous
+- DARKER TONES retained in shadows and background for depth and contrast
 
-Keep the ${species}'s appearance EXACTLY as shown in the input image. Only add Renaissance styling, clothing, and background.`;
+=== AUTOMATIC COLOR HARMONY (DEEP, RICH Colors) ===
+Select DEEP, RICH, SATURATED cloak, cushion, drapery, gem colors based on pet's fur/eye/nose tones while retaining darker tones:
+- WARM/TAN PETS: DEEP rich blues, DEEP forest greens, RICH burgundy, DEEP teal - DEEP and SATURATED
+- BLACK/DARK PETS: RICH cream, DEEP ivory, RICH gold, DEEP emerald, DEEP sapphire, RICH lavender - DEEP and RICH
+- WHITE/PALE PETS: DEEP rich jewel tones (DEEP ruby, DEEP emerald, DEEP sapphire, RICH periwinkle) - RICH colors
+- ORANGE/GINGER PETS: DEEP teal, RICH turquoise, DEEP forest green, DEEP navy - DEEP SATURATED tones
+- GRAY/SILVER PETS: DEEP burgundy, RICH plum, DEEP amethyst, RICH gold - DEEP and RICH
+- MULTICOLOR PETS: harmonize with dominant tone using DEEP/RICH colors
+
+=== COMPOSITION (Wide, Centered, Full Cushion) ===
+- WIDE and CENTERED composition showing FULL CUSHION
+- Pet seated NATURALLY like a real ${species} on embroidered throne cushion with VISIBLE GOLD TASSELS
+- Natural animal seated pose - NOT human-like posture
+- Body ¾ view, FRONT PAWS VISIBLE resting naturally on cushion
+- DAINTY, DELICATE regal CLOAK DRAPED over BOTH pet AND cushion - NOT clothing, just draped fabric
+- More DAINTY and REFINED - not heavy or bulky
+- NO human clothing - NO sleeves, NO buttons, NO tailored garments
+- SOFT, PLUSH VELVETY texture - luxurious velvet with visible nap and plush feel
+- VELVETY appearance - soft, plush, luxurious velvet fabric
+- BRIGHT ANTIQUE GOLD EMBROIDERY - delicate and refined
+- DEEP, RICH, SATURATED fabric colors
+- WHITE FUR TRIM with BLACK ERMINE SPOTS
+- Pet's natural body visible beneath draped cloak
+
+=== JEWELRY (Antique 18th-Century) ===
+- Layered MULTI-CHAIN gold necklaces, ornate FILIGREE
+- BRIGHT WHITE PEARLS and small CLUSTERED BRIGHT GEMSTONES
+- BRIGHT SPARKLING gems complement pet's natural colors
+
+=== BACKGROUND ===
+- Heavy SILKY velvet drapery with PAINTERLY FOLDS
+- Periodically use DEEP BLACK backgrounds for STRONG CONTRAST with fabrics, jewelry, and pet's natural colors
+- DEEP, RICH, SATURATED colors support harmony with pet
+- SILKY LUSTROUS texture with visible sheen
+- Atmospheric depth with DARKER TONES in shadows - retaining darker tones for depth
+- DEEP BLACK backgrounds create dramatic contrast and make colors pop
+
+=== RENDERING (Old-Master Realism with Glow) ===
+- VISIBLE BRUSHSTROKES, TEXTURED OIL PAINT, CANVAS GRAIN
+- MUSEUM-QUALITY rendering
+- LONG FLOWING brush strokes
+- Hand-painted charm with slight imperfections
+- NOT digital, NOT airbrushed, NOT too perfect
+- SUBTLE LUMINOUS GLOW throughout - gentle radiance
+- SILKY LUSTROUS textures on fabrics - visible sheen
+- DEEP, RICH, SATURATED colors throughout - rich jewel tones
+- DARKER TONES retained in shadows and background for depth
+- Subject GLOWS with BRIGHT warm light, fabrics GLOW with DEEP RICH color
+
+=== PRESERVE FROM ORIGINAL ===
+- Exact facial features, all markings, eye color, expression
+- Warm natural fur with painterly highlights
+- Deep black fur rich and saturated
+
+CRITICAL: ${species} must sit NATURALLY like a real ${species} - NOT human-like pose. NO human clothing - ONLY a cloak draped over. Keep ${species} EXACTLY as shown. Only add 18th-century aristocratic styling with draped cloak.`;
 
       // No fallback - if FLUX fails, we fail
       firstGeneratedBuffer = await generateWithFlux(
