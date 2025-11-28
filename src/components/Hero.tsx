@@ -81,9 +81,9 @@ export default function Hero({ onUploadClick }: HeroProps) {
           className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold mb-4 sm:mb-5 animate-fade-in-up delay-100 leading-tight"
           style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: '#F0EDE8' }}
         >
-          Turn your pet into a{" "}
+          Your Pet, Painted Like{" "}
           <span className="relative" style={{ color: '#C5A572' }}>
-            Renaissance
+            Royalty
             <svg 
               className="absolute -bottom-2 left-0 w-full h-3" 
               style={{ color: 'rgba(139, 58, 66, 0.6)' }} 
@@ -92,8 +92,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
             >
               <path d="M0 6 Q50 0, 100 6 T200 6" stroke="currentColor" strokeWidth="3" fill="none"/>
             </svg>
-          </span>{" "}
-          masterpiece.
+          </span>.
         </h1>
 
         {/* Subheadline */}
