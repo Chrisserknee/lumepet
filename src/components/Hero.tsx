@@ -142,7 +142,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
         <div className="flex justify-center gap-4 sm:gap-6 mb-8 sm:mb-10 animate-fade-in-up delay-300">
           {/* First Portrait Frame */}
           <div 
-            className="w-40 h-48 sm:w-52 sm:h-64 md:w-64 md:h-80 transform -rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative"
+            className="w-44 h-52 sm:w-52 sm:h-64 md:w-64 md:h-80 transform -rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative"
             style={{ 
               padding: '2px',
             }}
@@ -215,7 +215,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
 
           {/* Second Portrait Frame */}
           <div 
-            className="w-40 h-48 sm:w-52 sm:h-64 md:w-64 md:h-80 transform rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative"
+            className="w-44 h-52 sm:w-52 sm:h-64 md:w-64 md:h-80 transform rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative"
             style={{ 
               padding: '2px',
             }}
