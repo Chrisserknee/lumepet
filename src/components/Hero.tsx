@@ -102,7 +102,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
             Turn your pet into a
           </span>
           <span 
-            className="relative inline-block"
+            className="relative block mx-auto text-center"
             style={{ 
               color: '#C5A572',
               fontWeight: 600,
@@ -139,7 +139,7 @@ export default function Hero({ onUploadClick }: HeroProps) {
         </p>
 
         {/* Sample portraits */}
-        <div className="flex justify-center gap-4 sm:gap-6 mb-8 sm:mb-10 animate-fade-in-up delay-300">
+        <div className="flex justify-center items-center gap-4 sm:gap-6 mb-8 sm:mb-10 animate-fade-in-up delay-300 w-full">
           {/* First Portrait Frame */}
           <div 
             className="w-44 h-52 sm:w-52 sm:h-64 md:w-64 md:h-80 transform -rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative"
