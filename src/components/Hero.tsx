@@ -63,6 +63,9 @@ export default function Hero({ onUploadClick }: HeroProps) {
                 width={120}
                 height={120}
                 className="object-contain animate-float"
+                style={{
+                  filter: 'drop-shadow(0 0 12px rgba(255, 215, 100, 0.4)) drop-shadow(0 0 24px rgba(255, 200, 80, 0.25))'
+                }}
                 priority
               />
               {/* Sparkle particles */}
