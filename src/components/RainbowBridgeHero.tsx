@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { captureEvent } from "@/lib/posthog";
 
@@ -8,6 +9,28 @@ interface RainbowBridgeHeroProps {
 }
 
 export default function RainbowBridgeHero({ onUploadClick }: RainbowBridgeHeroProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // Close modal on ESC key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedImage(null);
+      }
+    };
+
+    if (selectedImage) {
+      document.addEventListener("keydown", handleEscape);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedImage]);
+
   return (
     <section className="min-h-[85vh] flex flex-col items-center justify-center px-4 sm:px-6 pt-6 sm:pt-10 pb-8 sm:pb-12 relative overflow-hidden w-full">
       {/* Heavenly background elements */}
@@ -157,9 +180,13 @@ export default function RainbowBridgeHero({ onUploadClick }: RainbowBridgeHeroPr
         <div className="flex justify-center items-center gap-3 sm:gap-6 mb-8 sm:mb-10 animate-fade-in-up delay-250">
           {/* Winston Portrait Frame (Left) */}
           <div 
-            className="w-36 h-44 sm:w-48 sm:h-60 md:w-56 md:h-72 transform -rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative flex-shrink-0"
+            className="w-36 h-44 sm:w-48 sm:h-60 md:w-56 md:h-72 transform -rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative flex-shrink-0 cursor-pointer"
             style={{ 
               padding: '2px',
+            }}
+            onClick={() => {
+              setSelectedImage("/samples/rainbowbridgewinston.png");
+              captureEvent("rainbow_bridge_hero_portrait_clicked", { pet: "Winston" });
             }}
           >
             {/* Soft outer glow/vignette - heavenly theme */}
@@ -231,9 +258,13 @@ export default function RainbowBridgeHero({ onUploadClick }: RainbowBridgeHeroPr
 
           {/* Biscuit Portrait Frame (Right) */}
           <div 
-            className="w-36 h-44 sm:w-48 sm:h-60 md:w-56 md:h-72 transform rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative flex-shrink-0"
+            className="w-36 h-44 sm:w-48 sm:h-60 md:w-56 md:h-72 transform rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300 relative flex-shrink-0 cursor-pointer"
             style={{ 
               padding: '2px',
+            }}
+            onClick={() => {
+              setSelectedImage("/samples/rainbowbridgecat2.png");
+              captureEvent("rainbow_bridge_hero_portrait_clicked", { pet: "Biscuit" });
             }}
           >
             {/* Soft outer glow/vignette - heavenly theme */}
@@ -356,6 +387,43 @@ export default function RainbowBridgeHero({ onUploadClick }: RainbowBridgeHeroPr
           </p>
         </div>
       </div>
+
+      {/* Lightbox Modal for Enlarged Portraits */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setSelectedImage(null)}
+          style={{ animation: 'fadeIn 0.3s ease-in-out' }}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-white/20"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#FFFFFF' }}
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Enlarged Image */}
+          <div 
+            className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative w-full h-full max-w-2xl max-h-[85vh] rounded-2xl overflow-hidden shadow-2xl">
+              <Image
+                src={selectedImage}
+                alt="Enlarged Rainbow Bridge memorial portrait"
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 800px"
+                priority
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
