@@ -1473,6 +1473,11 @@ export async function POST(request: NextRequest) {
     const petName = formData.get("petName") as string | null; // Pet's name for rainbow bridge portraits
     
     const isRainbowBridge = style === "rainbow-bridge";
+    
+    // Log Rainbow Bridge parameters
+    if (style || petName) {
+      console.log(`🌈 Form data - style: "${style}", petName: "${petName}", isRainbowBridge: ${isRainbowBridge}`);
+    }
 
     if (!imageFile) {
       return NextResponse.json(
@@ -2831,12 +2836,21 @@ Generate a refined portrait that addresses ALL corrections and matches the origi
 
     // Apply Rainbow Bridge text overlay if this is a memorial portrait
     let selectedQuote: string | null = null;
+    console.log(`🌈 Rainbow Bridge check: isRainbowBridge=${isRainbowBridge}, petName="${petName}", style="${style}"`);
     if (isRainbowBridge && petName) {
-      console.log("🌈 Applying Rainbow Bridge text overlay...");
-      const overlayResult = await addRainbowBridgeTextOverlay(generatedBuffer, petName);
-      generatedBuffer = overlayResult.buffer;
-      selectedQuote = overlayResult.quote;
-      console.log("✅ Rainbow Bridge text overlay complete");
+      try {
+        console.log("🌈 Applying Rainbow Bridge text overlay...");
+        console.log(`   Pet name: "${petName}"`);
+        const overlayResult = await addRainbowBridgeTextOverlay(generatedBuffer, petName);
+        generatedBuffer = overlayResult.buffer;
+        selectedQuote = overlayResult.quote;
+        console.log(`✅ Rainbow Bridge text overlay complete. Quote: "${selectedQuote}"`);
+      } catch (overlayError) {
+        console.error("❌ Rainbow Bridge text overlay FAILED:", overlayError);
+        // Continue without overlay rather than failing the entire generation
+      }
+    } else if (isRainbowBridge && !petName) {
+      console.warn("⚠️ Rainbow Bridge style but NO petName provided - skipping text overlay");
     }
 
     // Create preview (watermarked if not using pack credit or secret credit, un-watermarked if using either)

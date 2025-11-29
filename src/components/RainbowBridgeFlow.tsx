@@ -286,6 +286,7 @@ export default function RainbowBridgeFlow({ file, onReset }: RainbowBridgeFlowPr
       formData.append("image", fileToUpload);
       formData.append("style", "rainbow-bridge");
       formData.append("petName", petName.trim());
+      console.log("🌈 Sending Rainbow Bridge generation request with petName:", petName.trim());
       if (gender) {
         formData.append("gender", gender);
       }
