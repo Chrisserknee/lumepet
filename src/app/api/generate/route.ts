@@ -42,18 +42,27 @@ async function addRainbowBridgeTextOverlay(
   const height = metadata.height || 1024;
   console.log(`   Image dimensions: ${width}x${height}`);
   
-  // Create text SVG overlay
-  // Pet name at the bottom, quote above it
-  const fontSize = Math.floor(width * 0.06); // 6% of width for name
-  const quoteFontSize = Math.floor(width * 0.028); // 2.8% of width for quote
-  const padding = Math.floor(width * 0.05); // 5% padding
+  // Create text SVG overlay - using simpler approach for better compatibility
+  const fontSize = Math.floor(width * 0.055); // 5.5% of width for name
+  const quoteFontSize = Math.floor(width * 0.026); // 2.6% of width for quote
+  const padding = Math.floor(width * 0.04); // 4% padding
   
   // Escape special characters for SVG
-  const escapedName = petName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  const escapedQuote = quote.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const escapedName = petName
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+  const escapedQuote = quote
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
   
   // Split quote into multiple lines if too long
-  const maxCharsPerLine = 45;
+  const maxCharsPerLine = 50;
   const words = escapedQuote.split(' ');
   const quoteLines: string[] = [];
   let currentLine = '';
@@ -68,120 +77,79 @@ async function addRainbowBridgeTextOverlay(
   }
   if (currentLine) quoteLines.push(currentLine);
   
-  // Build quote tspans
-  const lineHeight = quoteFontSize * 1.4;
-  const quoteStartY = height - padding - fontSize - (quoteLines.length * lineHeight) - 20;
-  const quoteTspans = quoteLines.map((line, i) => 
-    `<tspan x="${width / 2}" dy="${i === 0 ? 0 : lineHeight}">${line}</tspan>`
-  ).join('');
+  // Calculate positions
+  const lineHeight = Math.floor(quoteFontSize * 1.5);
+  const totalQuoteHeight = quoteLines.length * lineHeight;
+  const nameY = height - padding;
+  const quoteStartY = nameY - fontSize - 15 - totalQuoteHeight + lineHeight;
+  const gradientStartY = quoteStartY - padding * 2;
+  const gradientHeight = height - gradientStartY;
   
-  const svgOverlay = `
-    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <defs>
-        <!-- Enhanced shadow filter for crisper text -->
-        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-          <feOffset dx="0" dy="2" result="offsetblur"/>
-          <feComponentTransfer>
-            <feFuncA type="linear" slope="0.7"/>
-          </feComponentTransfer>
-          <feMerge>
-            <feMergeNode/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
-        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#D4AF37;stop-opacity:1" />
-          <stop offset="50%" style="stop-color:#F5E6A3;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#D4AF37;stop-opacity:1" />
-        </linearGradient>
-        <linearGradient id="bottomGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:rgba(0,0,0,0);stop-opacity:0" />
-          <stop offset="40%" style="stop-color:rgba(0,0,0,0.3);stop-opacity:0.3" />
-          <stop offset="100%" style="stop-color:rgba(0,0,0,0.5);stop-opacity:0.5" />
-        </linearGradient>
-      </defs>
-      
-      <!-- Semi-transparent gradient at bottom for text readability -->
-      <rect x="0" y="${height - padding * 4 - fontSize - (quoteLines.length * lineHeight)}" width="${width}" height="${padding * 4 + fontSize + (quoteLines.length * lineHeight)}" 
-            fill="url(#bottomGradient)" />
-      
-      <!-- Quote text (italic, smaller) - Enhanced rendering -->
-      <text 
-        x="${width / 2}" 
-        y="${quoteStartY}" 
-        font-family="Georgia, 'Times New Roman', serif" 
-        font-size="${quoteFontSize}" 
-        font-style="italic"
-        fill="rgba(255,255,255,0.95)" 
-        text-anchor="middle"
-        filter="url(#shadow)"
-        text-rendering="geometricPrecision"
-        shape-rendering="geometricPrecision"
-        style="font-smooth: always; -webkit-font-smoothing: antialiased;"
-      >
-        ${quoteTspans}
-      </text>
-      
-      <!-- Pet name (larger, gold) - Enhanced rendering -->
-      <text 
-        x="${width / 2}" 
-        y="${height - padding}" 
-        font-family="Georgia, 'Times New Roman', serif" 
-        font-size="${fontSize}" 
-        font-weight="600"
-        fill="url(#goldGradient)" 
-        text-anchor="middle"
-        filter="url(#shadow)"
-        letter-spacing="0.1em"
-        text-rendering="geometricPrecision"
-        shape-rendering="geometricPrecision"
-        style="font-smooth: always; -webkit-font-smoothing: antialiased;"
-      >
-        ${escapedName}
-      </text>
-    </svg>
-  `;
+  // Build quote lines as separate text elements for better compatibility
+  const quoteTextElements = quoteLines.map((line, i) => {
+    const y = quoteStartY + (i * lineHeight);
+    return `<text x="${width / 2}" y="${y}" font-family="serif" font-size="${quoteFontSize}" font-style="italic" fill="#FFFFFF" fill-opacity="0.95" text-anchor="middle" stroke="#000000" stroke-width="1" stroke-opacity="0.3">${line}</text>`;
+  }).join('\n      ');
   
-  // Composite the text overlay onto the image with high quality settings
-  const overlayBuffer = Buffer.from(svgOverlay);
+  // Simpler SVG without complex filters for better serverless compatibility
+  const svgOverlay = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D4AF37"/>
+      <stop offset="50%" stop-color="#F5E6A3"/>
+      <stop offset="100%" stop-color="#D4AF37"/>
+    </linearGradient>
+    <linearGradient id="fadeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#000000" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="${gradientStartY}" width="${width}" height="${gradientHeight}" fill="url(#fadeGrad)"/>
+  ${quoteTextElements}
+  <text x="${width / 2}" y="${nameY}" font-family="serif" font-size="${fontSize}" font-weight="bold" fill="url(#goldGrad)" text-anchor="middle" stroke="#000000" stroke-width="2" stroke-opacity="0.3" letter-spacing="3">${escapedName}</text>
+</svg>`;
+
+  console.log("   SVG created, length:", svgOverlay.length, "chars");
   
-  // Render SVG overlay at high DPI for crisp text rendering, then resize to exact dimensions
-  const overlayPng = await sharp(overlayBuffer, {
-    density: 300 // Higher DPI for crisper text rendering
-  })
-    .resize(width, height, {
-      kernel: sharp.kernel.lanczos3, // High-quality resampling
-      fit: 'fill' // Ensure exact dimensions match
-    })
-    .png({ 
-      quality: 100,
-      compressionLevel: 6
-    })
-    .toBuffer();
-  
-  console.log("   Overlay PNG buffer size:", overlayPng.length, "bytes");
-  
-  const result = await sharp(imageBuffer)
-    .composite([
-      {
+  try {
+    // Convert SVG string to buffer
+    const svgBuffer = Buffer.from(svgOverlay, 'utf-8');
+    console.log("   SVG buffer size:", svgBuffer.length, "bytes");
+    
+    // Render SVG to PNG with sharp - use exact dimensions
+    const overlayPng = await sharp(svgBuffer, { density: 150 })
+      .resize(width, height, { fit: 'fill' })
+      .ensureAlpha()
+      .png()
+      .toBuffer();
+    
+    console.log("   Overlay PNG buffer size:", overlayPng.length, "bytes");
+    
+    // Ensure base image has alpha channel
+    const baseWithAlpha = await sharp(imageBuffer)
+      .ensureAlpha()
+      .toBuffer();
+    
+    // Composite overlay onto base image
+    const result = await sharp(baseWithAlpha)
+      .composite([{
         input: overlayPng,
         top: 0,
         left: 0,
         blend: 'over'
-      }
-    ])
-    .png({ 
-      quality: 100, 
-      compressionLevel: 6, // Balance between quality and file size
-      adaptiveFiltering: true,
-      palette: false // Use full color palette for better gradients
-    })
-    .toBuffer();
-  
-  console.log("   Result buffer size:", result.length, "bytes");
-  console.log("✅ Rainbow Bridge text overlay added successfully");
-  return { buffer: result, quote };
+      }])
+      .png({ quality: 100, compressionLevel: 6 })
+      .toBuffer();
+    
+    console.log("   Result buffer size:", result.length, "bytes");
+    console.log("✅ Rainbow Bridge text overlay added successfully");
+    return { buffer: result, quote };
+  } catch (svgError) {
+    console.error("❌ SVG rendering failed:", svgError);
+    // Return original image if overlay fails
+    return { buffer: imageBuffer, quote };
+  }
 }
 
 // Generate image using FLUX model via Replicate for better pet identity preservation
