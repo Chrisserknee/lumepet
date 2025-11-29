@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { imageId, email, type, packType } = body;
+    const { imageId, email, type, packType, canvasImageDataUrl } = body;
 
     // Validate email with strict validation
     if (!email || !isValidEmail(email)) {
@@ -91,7 +91,29 @@ export async function POST(request: NextRequest) {
         );
       }
       
-      productImage = [metadata.preview_url];
+      // If canvas image with text overlay is provided, upload it and use for Stripe
+      if (canvasImageDataUrl && canvasImageDataUrl.startsWith('data:image/')) {
+        try {
+          console.log("Uploading canvas image with text overlay for Stripe...");
+          const { uploadImage } = await import("@/lib/supabase");
+          
+          // Convert data URL to buffer
+          const base64Data = canvasImageDataUrl.split(',')[1];
+          const imageBuffer = Buffer.from(base64Data, 'base64');
+          
+          // Upload to Supabase with unique name
+          const canvasFileName = `${imageId}-stripe-preview.png`;
+          const canvasUrl = await uploadImage(imageBuffer, canvasFileName, 'image/png');
+          
+          productImage = [canvasUrl];
+          console.log("Canvas image uploaded for Stripe:", canvasUrl.substring(0, 80) + "...");
+        } catch (uploadError) {
+          console.error("Failed to upload canvas image, using original:", uploadError);
+          productImage = [metadata.preview_url];
+        }
+      } else {
+        productImage = [metadata.preview_url];
+      }
       console.log(`Creating checkout session with price: ${priceAmount} cents ($${(priceAmount / 100).toFixed(2)})`);
     }
 

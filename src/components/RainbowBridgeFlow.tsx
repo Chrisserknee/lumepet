@@ -548,6 +548,7 @@ export default function RainbowBridgeFlow({ file, onReset }: RainbowBridgeFlowPr
         email,
         type: isPackPurchase ? "pack" : "image",
         packType: isPackPurchase ? "2-pack" : undefined,
+        hasCanvasImage: !!canvasImageUrl,
       });
       
       const response = await fetch("/api/checkout", {
@@ -560,6 +561,8 @@ export default function RainbowBridgeFlow({ file, onReset }: RainbowBridgeFlowPr
           email,
           type: isPackPurchase ? "pack" : "image",
           packType: isPackPurchase ? "2-pack" : undefined,
+          // Include the canvas-rendered image for Stripe to display
+          canvasImageDataUrl: canvasImageUrl || undefined,
         }),
       });
 
