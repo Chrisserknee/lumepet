@@ -256,8 +256,9 @@ export default function RainbowBridgeFlow({ file, onReset }: RainbowBridgeFlowPr
     if (!file || !petName.trim()) return;
     
     const limits = getLimits();
+    // Allow generation if secret credit is activated, even if limits are reached
     const check = canGenerate(limits);
-    if (!check.allowed) {
+    if (!check.allowed && !useSecretCredit) {
       setError(check.reason || "Generation limit reached.");
       setStage("preview");
       return;
@@ -323,7 +324,7 @@ export default function RainbowBridgeFlow({ file, onReset }: RainbowBridgeFlowPr
         const updatedLimits = usePackCredit();
         setGenerationLimits(updatedLimits);
       } else if (usedSecretCredit) {
-        // Secret credit used - increment generation count but don't use pack credit
+        // Secret credit used - increment generation count (uses up the free slot granted by secret)
         const updatedLimits = incrementGeneration(isRetry);
         setGenerationLimits(updatedLimits);
         setUseSecretCredit(false); // Reset secret credit flag after use
@@ -523,8 +524,9 @@ export default function RainbowBridgeFlow({ file, onReset }: RainbowBridgeFlowPr
                 setSecretClickCount(newCount);
                 
                 if (newCount >= 6) {
-                  // Grant extra free generation
+                  // Grant extra free generation by reducing used count
                   const limits = getLimits();
+                  const oldUsed = limits.freeGenerations;
                   limits.freeGenerations = Math.max(0, limits.freeGenerations - 1); // Reduce used count by 1
                   saveLimits(limits);
                   setGenerationLimits(limits);
@@ -534,7 +536,8 @@ export default function RainbowBridgeFlow({ file, onReset }: RainbowBridgeFlowPr
                   setUseSecretCredit(true); // Enable un-watermarked generation for testing
                   
                   // Show subtle feedback
-                  console.log("🎉 Secret activated! Extra free generation granted (un-watermarked).");
+                  console.log(`🎉 Secret activated! Extra free generation granted (un-watermarked). Used count: ${oldUsed} → ${limits.freeGenerations}`);
+                  console.log("Can generate:", newCheck.allowed);
                 }
               }}
             >
