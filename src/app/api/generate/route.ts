@@ -29,15 +29,18 @@ async function addRainbowBridgeTextOverlay(
   imageBuffer: Buffer,
   petName: string
 ): Promise<{ buffer: Buffer; quote: string }> {
-  console.log("Adding Rainbow Bridge text overlay for:", petName);
+  console.log("🌈 Adding Rainbow Bridge text overlay for:", petName);
+  console.log("   Input buffer size:", imageBuffer.length, "bytes");
   
   // Get random quote
   const quote = RAINBOW_BRIDGE_QUOTES[Math.floor(Math.random() * RAINBOW_BRIDGE_QUOTES.length)];
+  console.log("   Selected quote:", quote);
   
   // Get image dimensions
   const metadata = await sharp(imageBuffer).metadata();
   const width = metadata.width || 1024;
   const height = metadata.height || 1024;
+  console.log(`   Image dimensions: ${width}x${height}`);
   
   // Create text SVG overlay
   // Pet name at the bottom, quote above it
@@ -157,6 +160,8 @@ async function addRainbowBridgeTextOverlay(
     })
     .toBuffer();
   
+  console.log("   Overlay PNG buffer size:", overlayPng.length, "bytes");
+  
   const result = await sharp(imageBuffer)
     .composite([
       {
@@ -174,6 +179,7 @@ async function addRainbowBridgeTextOverlay(
     })
     .toBuffer();
   
+  console.log("   Result buffer size:", result.length, "bytes");
   console.log("✅ Rainbow Bridge text overlay added successfully");
   return { buffer: result, quote };
 }
