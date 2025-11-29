@@ -25,6 +25,7 @@ const RAINBOW_BRIDGE_QUOTES = [
 ];
 
 // Add text overlay to rainbow bridge portrait (pet name and quote)
+// Uses sharp's built-in text rendering for serverless compatibility
 async function addRainbowBridgeTextOverlay(
   imageBuffer: Buffer,
   petName: string
@@ -42,115 +43,149 @@ async function addRainbowBridgeTextOverlay(
   const height = metadata.height || 1024;
   console.log(`   Image dimensions: ${width}x${height}`);
   
-  // Create text SVG overlay - using simpler approach for better compatibility
-  const fontSize = Math.floor(width * 0.055); // 5.5% of width for name
-  const quoteFontSize = Math.floor(width * 0.026); // 2.6% of width for quote
-  const padding = Math.floor(width * 0.04); // 4% padding
-  
-  // Escape special characters for SVG
-  const escapedName = petName
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-  const escapedQuote = quote
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-  
-  // Split quote into multiple lines if too long
-  const maxCharsPerLine = 50;
-  const words = escapedQuote.split(' ');
-  const quoteLines: string[] = [];
-  let currentLine = '';
-  
-  for (const word of words) {
-    if ((currentLine + ' ' + word).trim().length <= maxCharsPerLine) {
-      currentLine = (currentLine + ' ' + word).trim();
-    } else {
-      if (currentLine) quoteLines.push(currentLine);
-      currentLine = word;
-    }
-  }
-  if (currentLine) quoteLines.push(currentLine);
-  
-  // Calculate positions
-  const lineHeight = Math.floor(quoteFontSize * 1.5);
-  const totalQuoteHeight = quoteLines.length * lineHeight;
-  const nameY = height - padding;
-  const quoteStartY = nameY - fontSize - 15 - totalQuoteHeight + lineHeight;
-  const gradientStartY = quoteStartY - padding * 2;
-  const gradientHeight = height - gradientStartY;
-  
-  // Build quote lines as separate text elements for better compatibility
-  const quoteTextElements = quoteLines.map((line, i) => {
-    const y = quoteStartY + (i * lineHeight);
-    return `<text x="${width / 2}" y="${y}" font-family="serif" font-size="${quoteFontSize}" font-style="italic" fill="#FFFFFF" fill-opacity="0.95" text-anchor="middle" stroke="#000000" stroke-width="1" stroke-opacity="0.3">${line}</text>`;
-  }).join('\n      ');
-  
-  // Simpler SVG without complex filters for better serverless compatibility
-  const svgOverlay = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#D4AF37"/>
-      <stop offset="50%" stop-color="#F5E6A3"/>
-      <stop offset="100%" stop-color="#D4AF37"/>
-    </linearGradient>
-    <linearGradient id="fadeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#000000" stop-opacity="0.4"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.6"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="${gradientStartY}" width="${width}" height="${gradientHeight}" fill="url(#fadeGrad)"/>
-  ${quoteTextElements}
-  <text x="${width / 2}" y="${nameY}" font-family="serif" font-size="${fontSize}" font-weight="bold" fill="url(#goldGrad)" text-anchor="middle" stroke="#000000" stroke-width="2" stroke-opacity="0.3" letter-spacing="3">${escapedName}</text>
-</svg>`;
-
-  console.log("   SVG created, length:", svgOverlay.length, "chars");
-  
   try {
-    // Convert SVG string to buffer
-    const svgBuffer = Buffer.from(svgOverlay, 'utf-8');
-    console.log("   SVG buffer size:", svgBuffer.length, "bytes");
+    const padding = Math.floor(width * 0.04);
     
-    // Render SVG to PNG with sharp - use exact dimensions
-    const overlayPng = await sharp(svgBuffer, { density: 150 })
-      .resize(width, height, { fit: 'fill' })
+    // Use sharp's text input with simple options (no Pango markup for better compatibility)
+    // This uses libvips text rendering which should work in serverless
+    
+    // Render pet name
+    console.log("   Rendering name text...");
+    const nameText = await sharp({
+      text: {
+        text: petName.toUpperCase(),
+        width: width - padding * 2,
+        height: Math.floor(height * 0.08),
+        align: 'center',
+        rgba: true,
+        dpi: 150,
+      }
+    })
+    .png()
+    .toBuffer();
+    
+    // Tint the name text to gold color
+    const nameTextGold = await sharp(nameText)
+      .tint({ r: 212, g: 175, b: 55 })
+      .png()
+      .toBuffer();
+    
+    console.log("   Name text rendered, size:", nameTextGold.length, "bytes");
+    
+    // Render quote text
+    console.log("   Rendering quote text...");
+    const quoteText = await sharp({
+      text: {
+        text: `"${quote}"`,
+        width: width - padding * 4,
+        height: Math.floor(height * 0.12),
+        align: 'center',
+        rgba: true,
+        dpi: 120,
+      }
+    })
+    .png()
+    .toBuffer();
+    
+    // Keep quote text white
+    const quoteTextWhite = await sharp(quoteText)
+      .tint({ r: 255, g: 255, b: 255 })
       .ensureAlpha()
       .png()
       .toBuffer();
     
-    console.log("   Overlay PNG buffer size:", overlayPng.length, "bytes");
+    console.log("   Quote text rendered, size:", quoteTextWhite.length, "bytes");
     
-    // Ensure base image has alpha channel
-    const baseWithAlpha = await sharp(imageBuffer)
-      .ensureAlpha()
-      .toBuffer();
+    // Get dimensions of rendered text
+    const nameMetadata = await sharp(nameTextGold).metadata();
+    const quoteMetadata = await sharp(quoteTextWhite).metadata();
     
-    // Composite overlay onto base image
-    const result = await sharp(baseWithAlpha)
-      .composite([{
-        input: overlayPng,
-        top: 0,
+    const nameHeight = nameMetadata.height || Math.floor(height * 0.06);
+    const nameWidth = nameMetadata.width || width - padding * 2;
+    const quoteHeight = quoteMetadata.height || Math.floor(height * 0.08);
+    const quoteWidth = quoteMetadata.width || width - padding * 4;
+    
+    // Calculate positions from bottom
+    const nameY = height - padding - nameHeight;
+    const quoteY = nameY - quoteHeight - Math.floor(padding / 2);
+    
+    // Create dark gradient overlay for text readability
+    const gradientHeight = nameHeight + quoteHeight + padding * 4;
+    const gradientY = height - gradientHeight;
+    
+    // Simple gradient using sharp create
+    const gradientBuffer = await sharp({
+      create: {
+        width: width,
+        height: gradientHeight,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0.5 }
+      }
+    })
+    .png()
+    .toBuffer();
+    
+    // Apply vertical gradient by compositing multiple strips
+    const gradientStrips: { input: Buffer; top: number; left: number; blend: sharp.Blend }[] = [];
+    const numStrips = 10;
+    const stripHeight = Math.ceil(gradientHeight / numStrips);
+    
+    for (let i = 0; i < numStrips; i++) {
+      const alpha = (i / numStrips) * 0.6; // 0 to 0.6 opacity
+      const strip = await sharp({
+        create: {
+          width: width,
+          height: stripHeight,
+          channels: 4,
+          background: { r: 0, g: 0, b: 0, alpha: alpha }
+        }
+      }).png().toBuffer();
+      
+      gradientStrips.push({
+        input: strip,
+        top: gradientY + (i * stripHeight),
         left: 0,
-        blend: 'over'
-      }])
+        blend: 'over' as sharp.Blend
+      });
+    }
+    
+    // Composite everything together
+    const result = await sharp(imageBuffer)
+      .ensureAlpha()
+      .composite([
+        // Dark gradient strips at bottom
+        ...gradientStrips,
+        // Quote text (centered)
+        { 
+          input: quoteTextWhite, 
+          top: quoteY, 
+          left: Math.floor((width - quoteWidth) / 2), 
+          blend: 'over' 
+        },
+        // Pet name (centered)
+        { 
+          input: nameTextGold, 
+          top: nameY, 
+          left: Math.floor((width - nameWidth) / 2), 
+          blend: 'over' 
+        },
+      ])
       .png({ quality: 100, compressionLevel: 6 })
       .toBuffer();
     
     console.log("   Result buffer size:", result.length, "bytes");
     console.log("✅ Rainbow Bridge text overlay added successfully");
     return { buffer: result, quote };
-  } catch (svgError) {
-    console.error("❌ SVG rendering failed:", svgError);
-    // Return original image if overlay fails
+  } catch (textError) {
+    console.error("❌ Text rendering failed:", textError);
+    console.error("   Error details:", textError instanceof Error ? textError.message : String(textError));
+    
+    // Final fallback: return image without text overlay
+    console.log("   Returning image without text overlay");
     return { buffer: imageBuffer, quote };
   }
 }
+
 
 // Generate image using FLUX model via Replicate for better pet identity preservation
 async function generateWithFlux(
